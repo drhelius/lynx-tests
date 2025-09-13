@@ -1,3 +1,5 @@
+.DS_Store
+
 # Prerequisites
 *.d
 
@@ -35,6 +37,7 @@
 *.i*86
 *.x86_64
 *.hex
+*.lnx
 
 # Debug files
 *.dSYM/
