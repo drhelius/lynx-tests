@@ -206,7 +206,7 @@ _g_results: .res 20
     inx
     jmp @wait_stopped
 @run:
-    stx _g_results+11    ;
+    stx _g_results+11    ; $00
 
     ldx #$00
     ldy #$40
@@ -227,7 +227,7 @@ _g_results: .res 20
     inx
     jmp @wait_running
 @end:
-    stx _g_results+12    ;
+    stx _g_results+12    ; $ 01
 
     rts
 .endproc
