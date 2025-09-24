@@ -88,7 +88,9 @@
         "cassert": "cpp",
         "__config": "cpp",
         "joystick.h": "c",
-        "6502.h": "c"
+        "6502.h": "c",
+        "lynx.h": "c",
+        "tgi.h": "c"
     },
     "todo-tree.tree.showBadges": true,
     "todo-tree.tree.disableCompactFolders": false,

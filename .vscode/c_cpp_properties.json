@@ -9,7 +9,7 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/opt/homebrew/include/SDL2",
-                "/Users/drhelius/ws/cc65/include"
+                "/Users/drhelius/ws/lynx/cc65/include"
             ],
             "macFrameworkPath": ["/System/Library/Frameworks", "/Library/Frameworks"],
             "browse": {
