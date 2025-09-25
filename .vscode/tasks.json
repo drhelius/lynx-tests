@@ -1,0 +1,93 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Clean",
+            "osx": {
+                "command": "make -f ${workspaceFolder}/timers/Makefile clean",
+                "options": {
+                    "cwd": "${workspaceFolder}/timers"
+                },
+                "problemMatcher": [
+                    {
+                        "base": "$gcc",
+                        "fileLocation": [
+                            "relative",
+                            "${workspaceFolder}/timers"
+                        ]
+                    }
+                ],
+            },
+            "presentation": {
+                "reveal": "silent",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "close": false,
+                "clear": true,
+                "revealProblems": "onProblem"
+            },
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "Build (DEBUG)",
+            "osx": {
+                "command": "make -f ${workspaceFolder}/timers/Makefile",
+                "options": {
+                    "cwd": "${workspaceFolder}/timers"
+                },
+                "problemMatcher": [
+                    {
+                        "base": "$gcc",
+                        "fileLocation": [
+                            "relative",
+                            "${workspaceFolder}/timers"
+                        ]
+                    }
+                ],
+            },
+            "presentation": {
+                "reveal": "silent",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "close": false,
+                "clear": true,
+                "revealProblems": "onProblem"
+            },
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "Clean + Build (DEBUG)",
+            "osx": {
+                "command": "make -f ${workspaceFolder}/timers/Makefile",
+                "options": {
+                    "cwd": "${workspaceFolder}/timers"
+                },
+                "problemMatcher": [
+                    {
+                        "base": "$gcc",
+                        "fileLocation": [
+                            "relative",
+                            "${workspaceFolder}/timers"
+                        ]
+                    }
+                ],
+            },
+            "presentation": {
+                "reveal": "silent",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "close": false,
+                "clear": true,
+                "revealProblems": "onProblem"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": "Clean"
+        }
+    ]
+}

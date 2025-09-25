@@ -157,7 +157,6 @@ _g_results: .res 20
     sta TIM3CTLA
     nop
     nop
-    nop
     lda #TIMER3_INTERRUPT
     sta INTRST
     jmp @wait_irq
