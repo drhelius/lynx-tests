@@ -48,7 +48,7 @@ jobs:
             cd ..
           fi
         done
-    - name: Archive binary
+    - name: Archive binaries
       uses: actions/upload-artifact@v4
       with:
         name: lynx-tests-lnx.zip
