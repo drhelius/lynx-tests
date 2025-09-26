@@ -12,10 +12,7 @@ on:
 jobs:
   linux:
     name: Linux
-    strategy:
-      matrix:
-        os: [ubuntu-24.04]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
@@ -54,6 +51,6 @@ jobs:
     - name: Archive binary
       uses: actions/upload-artifact@v4
       with:
-        name: test-binaries-lnx
+        name: lynx-tests-lnx.zip
         path: artifacts/*.lnx
         if-no-files-found: error
