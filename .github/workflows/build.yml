@@ -1,0 +1,59 @@
+name: Build and Package
+
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+      - '.vscode/**'
+  pull_request:
+
+jobs:
+  linux:
+    name: Linux
+    strategy:
+      matrix:
+        os: [ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Update OS
+      run: sudo apt-get update -qq
+    - name: Install build dependencies
+      run: sudo apt-get install -y build-essential git
+    - name: Clone and build cc65
+      run: |
+        git clone https://github.com/cc65/cc65.git ~/cc65
+        cd ~/cc65
+        make
+        echo "CC65_HOME=$HOME/cc65" >> $GITHUB_ENV
+        echo "$HOME/cc65/bin" >> $GITHUB_PATH
+    - name: Build all projects
+      run: |
+        mkdir -p artifacts
+        for dir in */; do
+          # Skip hidden directories
+          if [[ "$dir" != .* ]]; then
+            echo "Building in directory: $dir"
+            cd "$dir"
+            if [ -f Makefile ]; then
+              make
+              # Copy any .lnx files to artifacts directory
+              find . -name "*.lnx" -exec cp {} ../artifacts/ \;
+            fi
+            cd ..
+          fi
+        done
+    - name: Archive binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-binaries-lnx
+        path: artifacts/*.lnx
+        if-no-files-found: error
