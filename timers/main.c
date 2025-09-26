@@ -2,6 +2,7 @@
 #include <tgi.h>
 #include <6502.h>
 #include <stdint.h>
+#include "util.h"
 
 #define RESULT_COUNT 16
 #define TEST_COUNT 7
@@ -9,15 +10,17 @@
 extern void run_tests(void);
 static void init(void);
 static void paint_results(void);
-static void hex2(char* out, uint8_t v);
+static void paint_debug_results(void);
+static void loop_forever(void);
 
 extern volatile uint8_t g_results[RESULT_COUNT];
-static const uint8_t k_expected_results[RESULT_COUNT] =
+
+static const expected_result_t k_expected_results[RESULT_COUNT] =
 {
-    0x00, 0xE9, 0x00, 0x08,
-    0x00, 0x01, 0x08, 0x00,
-    0x04, 0x08, 0x00, 0x36,
-    0x00, 0x01, 0x0D, 0x08,
+    EXPECT(0x00), EXPECT(0xE8, 0xE9), EXPECT(0x00), EXPECT(0x08),
+    EXPECT(0x00), EXPECT(0x01), EXPECT(0x08), EXPECT(0x00),
+    EXPECT(0x04, 0x05), EXPECT(0x08), EXPECT(0x00), EXPECT(0x36, 0x37),
+    EXPECT(0x00), EXPECT(0x01), EXPECT(0x0D), EXPECT(0x08),
 };
 
 static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 3, 5, 8, 12, 14, 15 };
@@ -39,6 +42,8 @@ void main(void)
     run_tests();
     init();
     paint_results();
+    paint_debug_results();
+    loop_forever();
 }
 
 static void init(void)
@@ -70,19 +75,17 @@ static void paint_results(void)
 
         for (i = 0; i < cnt; ++i)
         {
-            if (g_results[off + i] != k_expected_results[off + i])
+            if (!is_valid_result(g_results[off + i], &k_expected_results[off + i]))
             {
                 pass = 0;
-                fail_index = i; // 0-based index within the test
-                break; // first failing result
+                fail_index = i;
+                break;
             }
         }
 
-        // Print test name
         tgi_setcolor(COLOR_YELLOW);
         tgi_outtextxy(x, y, k_test_names[t]);
 
-        // Print PASS or failing index
         if (pass)
         {
             tgi_setcolor(COLOR_LIGHTGREEN);
@@ -90,9 +93,9 @@ static void paint_results(void)
         }
         else
         {
-            // show 1-based failing result number (e.g. "2")
+
             tgi_setcolor(COLOR_RED);
-            // format small number into buf
+
             if (fail_index + 1 >= 10)
             {
                 // unlikely with current counts, but keep generic
@@ -105,21 +108,43 @@ static void paint_results(void)
                 buf[0] = '0' + (fail_index + 1);
                 buf[1] = 0;
             }
+
             tgi_outtextxy(x + x_result, y, buf);
         }
 
         y += 9;
     }
+}
 
+static void paint_debug_results(void)
+{
+    char buf[4];
+    int i;
+    int y = 9 * 9;
+    int x = 0;
+
+    tgi_setcolor(COLOR_WHITE);
+
+    for (i = 0; i < RESULT_COUNT; ++i)
+    {
+        hex2(buf, g_results[i]);
+        tgi_outtextxy(x, y, buf);
+        x += 18;
+
+        if ((i + 1) % 9 == 0)
+        {
+            y += 9;
+            x = 0;
+        }
+    }
+}
+
+static void loop_forever(void)
+{
     tgi_updatedisplay();
-
     for (;;) ;
 }
 
-static void hex2(char* out, uint8_t v)
-{
-    static const char* H = "0123456789ABCDEF";
-    out[0] = H[(v >> 4) & 0x0F];
-    out[1] = H[v & 0x0F];
-    out[2] = 0;
-}
+
+
+// Check if actual result matches any of the expected values

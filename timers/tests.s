@@ -369,8 +369,6 @@
 ; and generate interrupts upon completion/reload
 ;===================================================================
 .proc test_7
-
-.segment "CODE"
     jsr reset_timers
 
     ; Clear pending interrupts
