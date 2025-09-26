@@ -12,7 +12,7 @@ on:
 jobs:
   linux:
     name: Linux
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -54,3 +54,36 @@ jobs:
         name: lynx-tests-lnx.zip
         path: artifacts/*.lnx
         if-no-files-found: error
+
+  release:
+    name: Release
+    needs: [linux]
+    if: github.event_name != 'pull_request' && startswith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Prepare release directory
+      run: |
+        mkdir -p release
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: lynx-tests-lnx.zip
+        path: release
+    - name: Create zip archive
+      run: |
+        cd release
+        zip lynx-tests-${{ github.ref_name }}.zip *.lnx
+    - name: Create release
+      run: |
+        gh release create ${{ github.ref_name }} ./release/lynx-tests-${{ github.ref_name }}.zip \
+          --title "Lynx Tests ${{ github.ref_name }}" \
+          --draft \
+          --generate-notes
+      env:
+        GITHUB_TOKEN: ${{ github.TOKEN }}
