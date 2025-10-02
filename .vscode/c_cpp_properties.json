@@ -8,6 +8,7 @@
             "intelliSenseMode": "macos-clang-arm64",
             "includePath": [
                 "${workspaceFolder}/**",
+                "${workspaceFolder}/shared",
                 "/opt/homebrew/include/SDL2",
                 "${env:CC65_HOME}/include"
             ],

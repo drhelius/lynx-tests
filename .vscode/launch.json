@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${env:GEARLYNX_HOME}/gearlynx",
             "cwd": "${env:GEARLYNX_HOME}",
-            "args": ["${workspaceFolder}/timers/timers.lnx"],
+            "args": ["${workspaceFolder}/${config:current_test}/${config:current_test}.lnx"],
             "MIMode": "lldb",
             "externalConsole": true,
             "stopAtEntry": false,

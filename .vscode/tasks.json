@@ -5,16 +5,16 @@
             "type": "shell",
             "label": "Clean",
             "osx": {
-                "command": "make -f ${workspaceFolder}/timers/Makefile clean",
+                "command": "make -f ${workspaceFolder}/${config:current_test}/Makefile clean",
                 "options": {
-                    "cwd": "${workspaceFolder}/timers"
+                    "cwd": "${workspaceFolder}/${config:current_test}"
                 },
                 "problemMatcher": [
                     {
                         "base": "$gcc",
                         "fileLocation": [
                             "relative",
-                            "${workspaceFolder}/timers"
+                            "${workspaceFolder}/${config:current_test}"
                         ]
                     }
                 ],
@@ -33,16 +33,16 @@
             "type": "shell",
             "label": "Build (DEBUG)",
             "osx": {
-                "command": "make -f ${workspaceFolder}/timers/Makefile",
+                "command": "make -f ${workspaceFolder}/${config:current_test}/Makefile",
                 "options": {
-                    "cwd": "${workspaceFolder}/timers"
+                    "cwd": "${workspaceFolder}/${config:current_test}"
                 },
                 "problemMatcher": [
                     {
                         "base": "$gcc",
                         "fileLocation": [
                             "relative",
-                            "${workspaceFolder}/timers"
+                            "${workspaceFolder}/${config:current_test}"
                         ]
                     }
                 ],
@@ -61,16 +61,16 @@
             "type": "shell",
             "label": "Clean + Build (DEBUG)",
             "osx": {
-                "command": "make -f ${workspaceFolder}/timers/Makefile",
+                "command": "make -f ${workspaceFolder}/${config:current_test}/Makefile",
                 "options": {
-                    "cwd": "${workspaceFolder}/timers"
+                    "cwd": "${workspaceFolder}/${config:current_test}"
                 },
                 "problemMatcher": [
                     {
                         "base": "$gcc",
                         "fileLocation": [
                             "relative",
-                            "${workspaceFolder}/timers"
+                            "${workspaceFolder}/${config:current_test}"
                         ]
                     }
                 ],
