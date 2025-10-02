@@ -1,7 +1,9 @@
-include lynxcc65.mak
+include ../shared/lynxcc65.mak
+
+CFLAGS += -I../shared
 
 target = timers.lnx
-objects = tests.o main.o 
+objects = tests.o main.o
 
 all: $(target)
 

@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "util.h"
 
-#define RESULT_COUNT 16
+#define RESULT_COUNT 18
 #define TEST_COUNT 7
 
 extern void run_tests(void);
@@ -33,7 +33,7 @@ static const char* k_test_names[TEST_COUNT] =
     "ONESHOT+IRQ",
     "RESET-DONE",
     "TDONE BIT",
-    "ONESHOT+LNK",
+    "ONESHOT+LINK",
     "TDONE RELOAD"
 };
 
@@ -98,7 +98,6 @@ static void paint_results(void)
 
             if (fail_index + 1 >= 10)
             {
-                // unlikely with current counts, but keep generic
                 buf[0] = '0' + ((fail_index + 1) / 10);
                 buf[1] = '0' + ((fail_index + 1) % 10);
                 buf[2] = 0;
@@ -144,7 +143,3 @@ static void loop_forever(void)
     tgi_updatedisplay();
     for (;;) ;
 }
-
-
-
-// Check if actual result matches any of the expected values

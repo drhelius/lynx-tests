@@ -10,7 +10,7 @@
 
 ;-------------------------------------------------------------------
 .segment "BSS"
-    _g_results: .res 16
+    _g_results: .res 18
 
 ;-------------------------------------------------------------------
 .segment "CODE"
@@ -19,7 +19,7 @@
 ; Reset both Timer 3 and Timer 5 to initial state
 ; Clears all control registers, backup values, and counters
 ;===================================================================
-.proc reset_timers
+.proc ResetTimers
     ; Reset Timer 3 registers
     stz TIM3CTLA    ; Disable timer 3
     stz TIM3BKUP    ; Clear backup/reload value
@@ -39,24 +39,24 @@
 ; Verifies that CTLB register can be written to and read back
 ; Tests mask behavior (only certain bits are writable)
 ;===================================================================
-.proc test_1
-    jsr reset_timers
+.proc Test1
+    jsr ResetTimers
 
     ; Read initial CTLB value (should be $00)
     lda TIM3CTLB
-    sta _g_results + 0    ; Expected: $00
+    sta _g_results + 0    ; #1 Expected: $00
 
     ; Write $FF and read back (tests register mask)
     lda #$FF
     sta TIM3CTLB
     lda TIM3CTLB
-    sta _g_results + 1    ; Expected: $E9 (only writable bits set)
+    sta _g_results + 1    ; #2 Expected: $E8-$E9
 
     ; Clear register and verify
     lda #$00
     sta TIM3CTLB
     lda TIM3CTLB
-    sta _g_results + 2    ; Expected: $00
+    sta _g_results + 2    ; #3 Expected: $00
 
     rts
 .endproc
@@ -66,8 +66,8 @@
 ; Starts timer and polls for DONE bit, verifies no IRQ is generated
 ; Tests basic timer countdown and completion detection
 ;===================================================================
-.proc test_2
-    jsr reset_timers
+.proc Test2
+    jsr ResetTimers
 
     ; Clear any pending interrupts
     lda #$FF
@@ -88,11 +88,11 @@
     and #$08
     beq @wait_done
 
-    sta _g_results + 3    ; Expected: $08 (DONE bit set)
+    sta _g_results + 3    ; #1 Expected: $08 (DONE bit set)
 
     ; Verify no interrupt was generated
     lda INTSET
-    sta _g_results + 4    ; Expected: $00 (no IRQ)
+    sta _g_results + 4    ; #2 Expected: $00 (no IRQ)
 
     rts
 .endproc
@@ -102,8 +102,8 @@
 ; Enables timer interrupts and counts IRQ occurrences
 ; Verifies single IRQ generation for one-shot mode
 ;===================================================================
-.proc test_3
-    jsr reset_timers
+.proc Test3
+    jsr ResetTimers
 
     ldx #$00    ; IRQ counter
     ldy #$40    ; Timeout counter
@@ -137,16 +137,16 @@
     jmp @wait_irq
 
 @done:
-    stx _g_results + 5    ; Expected: $01 (exactly one IRQ)
+    stx _g_results + 5    ; #1 Expected: $01 (exactly one IRQ)
 
     ; Verify timer completed (DONE bit set)
     lda TIM3CTLB
     and #$08
-    sta _g_results + 6    ; Expected: $08
+    sta _g_results + 6    ; #2 Expected: $08
 
     ; Counter should be zero after completion
     lda TIM3CNT
-    sta _g_results + 7    ; Expected: $00
+    sta _g_results + 7    ; #3 Expected: $00
     rts
 .endproc
 
@@ -155,13 +155,13 @@
 ; Tests level-triggered interrupt behavior with RESET_DONE
 ; Demonstrates continuous IRQ generation until RESET_DONE is cleared
 ;===================================================================
-.proc test_4
+.proc Test4
 
 .segment "ZEROPAGE"
     iterations: .res 1
 
 .segment "CODE"
-    jsr reset_timers
+    jsr ResetTimers
 
     ldx #$00    ; IRQ counter
     ldy #$40    ; Timeout counter
@@ -212,23 +212,23 @@
     jmp @wait_irq
 
 @done:
-    stx _g_results + 8    ; Expected: $04 (four IRQs)
+    stx _g_results + 8    ; #1 Expected: $04-$05
 
     ; DONE bit should still be set
     lda TIM3CTLB
     and #$08
-    sta _g_results + 9    ; Expected: $08
+    sta _g_results + 9    ; #2 Expected: $08
 
     ; Disable timer and clear DONE bit
     stz TIM3CTLA
     stz TIM3CTLB
     lda TIM3CTLB
     and #$08
-    sta _g_results + 10   ; Expected: $00 (DONE cleared)
+    sta _g_results + 10   ; #3 Expected: $00 (DONE cleared)
 
     ; Store remaining iterations when RESET_DONE was disabled
     lda iterations
-    sta _g_results + 11   ; Expected: $3A
+    sta _g_results + 11   ; #4 Expected: $36-$37
     rts
 .endproc
 
@@ -237,8 +237,8 @@
 ; Verifies that setting DONE bit prevents timer from running
 ; Then tests normal operation after clearing DONE bit
 ;===================================================================
-.proc test_5
-    jsr reset_timers
+.proc Test5
+    jsr ResetTimers
 
     ldx #$00    ; IRQ counter for stopped timer
     ldy #$40    ; Timeout counter
@@ -275,7 +275,7 @@
     jmp @wait_stopped
 
 @run:
-    stx _g_results + 12    ; Expected: $00 (no IRQs while stopped)
+    stx _g_results + 12    ; #1 Expected: $00 (no IRQs while stopped)
 
     ldx #$00    ; Reset IRQ counter
     ldy #$40    ; Reset timeout
@@ -299,7 +299,7 @@
     jmp @wait_running
 
 @end:
-    stx _g_results + 13    ; Expected: $01 (one IRQ after clearing DONE)
+    stx _g_results + 13    ; #2 Expected: $01 (one IRQ after clearing DONE)
 
     rts
 .endproc
@@ -309,13 +309,13 @@
 ; Timer 5 (with RESET_DONE) linked to Timer 3 (with reload)
 ; Tests cascade timing and interrupt generation from linked timers
 ;===================================================================
-.proc test_6
+.proc Test6
 
 .segment "ZEROPAGE"
     t5_count: .res 1    ; Counter for Timer 5 interrupts
 
 .segment "CODE"
-    jsr reset_timers
+    jsr ResetTimers
 
     ; Clear pending interrupts
     lda #$FF
@@ -358,7 +358,7 @@
 
     ; Store total Timer 5 interrupt count
     lda t5_count
-    sta _g_results + 14   ; Expected: $0D (13 Timer 5 interrupts)
+    sta _g_results + 14   ; #1 Expected: $0D (13 Timer 5 interrupts)
     rts
 
 .endproc
@@ -368,8 +368,8 @@
 ; Verifies that timers with reload enabled still set DONE bit
 ; and generate interrupts upon completion/reload
 ;===================================================================
-.proc test_7
-    jsr reset_timers
+.proc Test7
+    jsr ResetTimers
 
     ; Clear pending interrupts
     lda #$FF
@@ -393,7 +393,7 @@
     ; Check if DONE bit is set even in reload mode
     lda TIM3CTLB
     and #$08
-    sta _g_results + 15   ; Expected: $08 (DONE bit set)
+    sta _g_results + 15   ; #1 Expected: $08 (DONE bit set)
 
     ; Stop timer
     stz TIM3CTLA
@@ -405,13 +405,13 @@
 ;===================================================================
 _run_tests:
     sei                 ; Disable interrupts during testing
-    jsr test_1          ; Basic register read/write test
-    jsr test_2          ; One-shot timer without interrupts
-    jsr test_3          ; One-shot timer with interrupts
-    jsr test_4          ; RESET_DONE functionality test
-    jsr test_5          ; Pre-set DONE bit behavior test
-    jsr test_6          ; Timer linking test
-    jsr test_7          ; Reload mode DONE bit test
-    jsr reset_timers    ; Clean up timer state
+    jsr Test1           ; Basic register read/write test
+    jsr Test2           ; One-shot timer without interrupts
+    jsr Test3           ; One-shot timer with interrupts
+    jsr Test4           ; RESET_DONE functionality test
+    jsr Test5           ; Pre-set DONE bit behavior test
+    jsr Test6           ; Timer linking test
+    jsr Test7           ; Reload mode DONE bit test
+    jsr ResetTimers     ; Clean up timer state
     cli                 ; Re-enable interrupts
     rts
