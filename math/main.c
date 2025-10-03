@@ -5,7 +5,7 @@
 #include "util.h"
 
 #define RESULT_COUNT 18
-#define TEST_COUNT 1
+#define TEST_COUNT 8
 
 extern void run_tests(void);
 static void init(void);
@@ -17,18 +17,26 @@ extern volatile uint8_t g_results[RESULT_COUNT];
 
 static const expected_result_t k_expected_results[RESULT_COUNT] =
 {
-    EXPECT(0x00), EXPECT(0x00), EXPECT(0x00), EXPECT(0x00),
-    EXPECT(0x00), EXPECT(0x00), EXPECT(0x00), EXPECT(0x00),
-    EXPECT(0x00), EXPECT(0x00), EXPECT(0x00), EXPECT(0x00),
-    EXPECT(0x00), EXPECT(0x00), EXPECT(0x00), EXPECT(0x00),
+    EXPECT(0xFF), EXPECT(0x00), EXPECT(0xFF), EXPECT(0x00),
+    EXPECT(0xFF), EXPECT(0x00), EXPECT(0xFF), EXPECT(0x00),
+    EXPECT(0xFF), EXPECT(0x00), EXPECT(0xFF), EXPECT(0x00),
+    EXPECT(0xFF), EXPECT(0x00), EXPECT(0xFF), EXPECT(0x00),
+    EXPECT(0x00), EXPECT(0x00)
 };
 
-static const uint8_t k_test_offsets[TEST_COUNT] = { 0 };
-static const uint8_t k_test_counts[TEST_COUNT]  = { 1 };
+static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 2, 4, 6, 8, 10, 12, 14 };
+static const uint8_t k_test_counts[TEST_COUNT]  = { 2, 2, 2, 2, 2, 2, 2, 2 };
 
 static const char* k_test_names[TEST_COUNT] =
 {
-    "MATH",
+    "SIMPLE MUL",
+    "ACCUM MUL",
+    "SIGNED MUL",
+    "MUL $8000 BUG",
+    "SIMPLE DIV",
+    "NO REM DIV",
+    "DIV BY ZERO",
+    "TIMING"
 };
 
 void main(void)
@@ -72,7 +80,7 @@ static void paint_results(void)
             if (!is_valid_result(g_results[off + i], &k_expected_results[off + i]))
             {
                 pass = 0;
-                fail_index = i;
+                fail_index = g_results[off + i];
                 break;
             }
         }
@@ -92,13 +100,13 @@ static void paint_results(void)
 
             if (fail_index + 1 >= 10)
             {
-                buf[0] = '0' + ((fail_index + 1) / 10);
-                buf[1] = '0' + ((fail_index + 1) % 10);
+                buf[0] = '0' + ((fail_index) / 10);
+                buf[1] = '0' + ((fail_index) % 10);
                 buf[2] = 0;
             }
             else
             {
-                buf[0] = '0' + (fail_index + 1);
+                buf[0] = '0' + (fail_index);
                 buf[1] = 0;
             }
 
@@ -113,7 +121,7 @@ static void paint_debug_results(void)
 {
     char buf[4];
     int i;
-    int y = 9 * 9;
+    int y = 4 + (9 * 9);
     int x = 0;
 
     tgi_setcolor(COLOR_WHITE);
