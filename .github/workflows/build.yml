@@ -73,7 +73,7 @@ jobs:
     - name: Download artifacts
       uses: actions/download-artifact@v4
       with:
-        name: lynx-tests-lnx.zip
+        name: lynx-tests-lnx
         path: release
     - name: Create zip archive
       run: |
