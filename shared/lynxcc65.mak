@@ -40,7 +40,10 @@ SEGMENTS=--code-name $(CODE_SEGMENT) \
 ARFLAGS=a
 
 # The flags for compiling C-code
-CFLAGS=-I . -t $(SYS) -O -Or -Cl -Os
+CFLAGS=-g -I . -t $(SYS) -O -Or -Cl -Os
+
+# The flags for assembling
+AFLAGS=-g
 
 # Rule for making a *.o file out of a *.s file
 # TODO: Find out if this works {}.s{$(ODIR)}.o:
