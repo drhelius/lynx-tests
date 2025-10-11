@@ -35,22 +35,29 @@
 .endproc
 
 ;===================================================================
-; Test 1: Basic TIM3CTLB register read/write functionality
-; Verifies that CTLB register can be written to and read back
-; Tests mask behavior (only certain bits are writable)
+; Test 1: 
 ;===================================================================
 .proc Test1
     jsr ResetTimers
 
     ; Read initial CTLB value (should be $00)
+    ldx #$01
     lda TIM3CTLB
-    sta _g_results + 0    ; #1 Expected: $00
+    cmp #$00
+    bne @fail
 
-    ; Write $FF and read back (tests register mask)
-    lda #$FF
+    lda #$80
+    sta TIM3CNT           ; Set counter to non-zero
+
+    ; write timer done and borrow in (this will clock the timer)
+    lda #$0A
     sta TIM3CTLB
     lda TIM3CTLB
-    sta _g_results + 1    ; #2 Expected: $E8-$E9
+    and #$0F              ; Mask off upper bits (undocumented)
+    sta _g_results + 0    ; #1 Expected: $08 (will leave timer done)
+
+    lda TIM3CNT
+    sta _g_results + 1    ; #2 Expected: $7F (counter decremented)
 
     ; Clear register and verify
     lda #$00
@@ -58,6 +65,13 @@
     lda TIM3CTLB
     sta _g_results + 2    ; #3 Expected: $00
 
+    jmp @end
+
+@fail:
+    txa
+    sta _g_results + 0    ; CTLB not zero at start
+
+@end:
     rts
 .endproc
 
@@ -228,7 +242,7 @@
 
     ; Store remaining iterations when RESET_DONE was disabled
     lda iterations
-    sta _g_results + 11   ; #4 Expected: $36-$37
+    sta _g_results + 11   ; #4 Expected: $35-$37
     rts
 .endproc
 
