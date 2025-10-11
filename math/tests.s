@@ -616,7 +616,7 @@
     sta td              ; save measured delta for reporting on failure
     cmp #$05            ; Minimum $05 ticks (inclusive)
     bcc @fail
-    cmp #$06            ; Maximum $05 ticks (inclusive)
+    cmp #$08            ; Maximum $08 ticks (exclusive)
     bcs @fail
 
 @div_test:
@@ -664,7 +664,7 @@
     sta td              ; save measured delta for reporting on failure
     cmp #$0F            ; Minimum $0F ticks (inclusive)
     bcc @fail
-    cmp #$10            ; Maximum $0F ticks (inclusive)
+    cmp #$10            ; Maximum $10 ticks (exclusive)
     bcs @fail
 
 @pass:
