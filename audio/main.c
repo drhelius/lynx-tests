@@ -20,20 +20,23 @@ static const expected_result_t k_expected_results[RESULT_COUNT] =
     EXPECT(0x08), EXPECT(0x3F), EXPECT(0x00),
     EXPECT(0x08), EXPECT(0x00), EXPECT(0x7F),
     EXPECT(0xFF), EXPECT(0xFE), EXPECT(0xFD), EXPECT(0x0F), EXPECT(0x80),
+    EXPECT(0xED), EXPECT(0x10), EXPECT(0x7F),
     EXPECT(0x00),
-    EXPECT(0x00), EXPECT(0x00), EXPECT(0x00), EXPECT(0x00), EXPECT(0x00), EXPECT(0x00)
+    EXPECT(0x00),
+    EXPECT(0x00),
+    EXPECT(0x00)
 };
 
-static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 3, 6, 11, 12, 13, 14 };
-static const uint8_t k_test_counts[TEST_COUNT]  = { 3, 3, 5, 1,  1,  1,  1 };
+static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 3, 6, 11, 14, 15, 16 };
+static const uint8_t k_test_counts[TEST_COUNT]  = { 3, 3, 5, 3,  1,  1,  1 };
 
 static const char* k_test_names[TEST_COUNT] =
 {
     "CTLB RD/WR",
     "ONESHOT",
     "INTEGRATE",
-    "..",
-    "..",
+    "MAX LENGTH",
+    "CLIPPING",
     "..",
     ".."
 };

@@ -135,9 +135,8 @@
 ;===================================================================
 .proc Test3
 .segment "ZEROPAGE"
-    base_ctla: .res 1
-    iter:      .res 1
-    tmp:       .res 1
+    t3_base_ctla: .res 1
+    t3_iter:      .res 1
 
 .segment "CODE"
     jsr ResetChannels
@@ -159,11 +158,11 @@
     sta AUD0CNT
 
     lda #(ENABLE_COUNT | ENABLE_RELOAD | ENABLE_INTEGRATE | 6)
-    sta base_ctla
+    sta t3_base_ctla
     sta AUD0CTLA
 
     lda #$00
-    sta iter
+    sta t3_iter
 
 @wait_done:
     lda AUD0CTLB
@@ -171,19 +170,19 @@
     beq @wait_done
 
     lda AUD0OUT
-    ldx iter
+    ldx t3_iter
     sta _g_results + 6,x ; Expected: $FF, $FE, $FD
 
     ; Clean Timer DONE flag using CTLA (level-triggered)
     ; It can also be cleared by writing $00 to CTLB
-    lda base_ctla
+    lda t3_base_ctla
     ora #$40
     sta AUD0CTLA          ; Reset Timer DONE
-    lda base_ctla
+    lda t3_base_ctla
     sta AUD0CTLA          ; restore CTLA
 
-    inc iter
-    lda iter
+    inc t3_iter
+    lda t3_iter
     cmp #3
     bcc @wait_done
 
@@ -197,6 +196,101 @@
     rts
 .endproc
 
+;===================================================================
+; Test 4: CH0 maximal-length taps with non-trivial seed
+; Run borrows, ensure no short period.
+; Results at _g_results + 11..13 (3 bytes max):
+;===================================================================
+.proc Test4
+.segment "ZEROPAGE"
+    t4_base_ctla: .res 1
+    t4_iter:      .res 1
+    t4_seed_lo:   .res 1
+    t4_seed_hi:   .res 1
+    t4_outlast:   .res 1
+.segment "CODE"
+    jsr ResetChannels
+
+    lda #$7F
+    sta AUD0VOL
+
+    ; Mask = %1001_0101 = $95
+    lda #$95
+    sta AUD0FEED
+
+    ; Seed = 0xAB3
+    lda #$B3
+    sta AUD0SHIFT
+    lda #$A0            ; upper nibble = $A
+    sta AUD0CTLB
+
+    lda AUD0SHIFT       ; remember initial seed to detect early repeats
+    sta t4_seed_lo
+    lda AUD0CTLB
+    and #$F0
+    sta t4_seed_hi
+
+    ;----- generate many borrows quickly
+    lda #$04
+    sta AUD0BKUP
+    sta AUD0CNT
+
+    lda #(ENABLE_COUNT | ENABLE_RELOAD | 6)
+    sta t4_base_ctla
+    sta AUD0CTLA
+
+    stz t4_iter
+@loop_wait_done:
+    ; Poll DONE in CTLB
+    lda AUD0CTLB
+    and #$08
+    beq @loop_wait_done
+
+    ; Latch latest OUT
+    lda AUD0OUT
+    sta t4_outlast
+
+    ; Early period check: compare current LFSR to initial seed
+    lda AUD0SHIFT
+    cmp t4_seed_lo
+    bne @not_repeat
+    lda AUD0CTLB
+    and #$F0
+    cmp t4_seed_hi
+    bne @not_repeat
+
+    ; If we hit the seed again too early (short period), flag failure
+    lda #$EE
+    sta _g_results + 11
+    sta _g_results + 12
+    sta _g_results + 13
+    rts
+
+@not_repeat:
+    ; Pulse reset-done via CTLA (level-triggered)
+    lda t4_base_ctla
+    ora #$40
+    sta AUD0CTLA
+    lda t4_base_ctla
+    sta AUD0CTLA
+
+    ; Repeat for ~48 borrows
+    inc t4_iter
+    lda t4_iter
+    cmp #48
+    bcc @loop_wait_done
+
+    ; Capture final 12-bit LFSR and last OUT sample
+    lda AUD0SHIFT
+    sta _g_results + 11
+    lda AUD0CTLB
+    and #$F0
+    sta _g_results + 12
+    lda t4_outlast
+    sta _g_results + 13
+    rts
+.endproc
+
 
 ;===================================================================
 ; Main test runner function
@@ -206,6 +300,7 @@ _run_tests:
     jsr Test1
     jsr Test2
     jsr Test3
+    jsr Test4
     jsr ResetChannels
     cli                 ; Re-enable interrupts
     rts
