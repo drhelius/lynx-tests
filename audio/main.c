@@ -22,7 +22,7 @@ static const expected_result_t k_expected_results[RESULT_COUNT] =
     EXPECT(0xFF), EXPECT(0xFE), EXPECT(0xFD), EXPECT(0x0F), EXPECT(0x80),
     EXPECT(0xED), EXPECT(0x10), EXPECT(0x7F),
     EXPECT(0x80),
-    EXPECT(0x00), EXPECT(0x00), EXPECT(0x00)
+    EXPECT(0xEB), EXPECT(0x40), EXPECT(0x3F)
 };
 
 static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 3, 6, 11, 14, 15 };

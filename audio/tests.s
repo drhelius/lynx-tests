@@ -432,6 +432,90 @@
 .endproc
 
 ;===================================================================
+; Test 6: CH0 long run with BKUP=$00 / CNT=$00 and reload
+; Thousands of borrows. Dense flow (one borrow per prescaler tick)
+; Results at _g_results + 15..17 (3 bytes):
+;===================================================================
+.proc Test6
+.segment "ZEROPAGE"
+    t6_base_ctla: .res 1
+    t6_it_lo:     .res 1
+    t6_it_hi:     .res 1
+.segment "CODE"
+    jsr ResetChannels
+
+    ; Non-trivial volume
+    lda #$3F
+    sta AUD0VOL
+
+    ; Non-trivial taps
+    lda #$95
+    sta AUD0FEED
+
+    ; Non-trivial seed: 0xD3A
+    lda #$3A
+    sta AUD0SHIFT
+    lda #$D0
+    sta AUD0CTLB
+
+    stz AUD0BKUP
+    stz AUD0CNT
+
+    lda #(ENABLE_COUNT | ENABLE_RELOAD | FEEDBACK_7 | 6)
+    sta t6_base_ctla
+    sta AUD0CTLA
+
+    ; Iterate for 4096 borrows (0x1000)
+    stz t6_it_lo
+    stz t6_it_hi
+
+@loop_wait_done:
+    ; Wait for DONE
+    lda AUD0CTLB
+    and #$08
+    beq @loop_wait_done
+
+    ; Validate CNT == $00 at DONE
+    lda AUD0CNT
+    cmp #$00
+    beq @cnt_ok
+
+    ; Failure: unexpected CNT value
+    lda #$EE
+    sta _g_results + 15
+    sta _g_results + 16
+    sta _g_results + 17
+    rts
+
+@cnt_ok:
+    ; Clear DONE via CTLA pulse
+    lda t6_base_ctla
+    ora #$40
+    sta AUD0CTLA
+    lda t6_base_ctla
+    sta AUD0CTLA
+
+    ; Next iteration
+    inc t6_it_lo
+    bne @next_check
+    inc t6_it_hi
+@next_check:
+    lda t6_it_hi
+    cmp #$10             ; 0x10 * 0x100 = 4096 iterations
+    bcc @loop_wait_done
+
+    ; Store final state
+    lda AUD0SHIFT
+    sta _g_results + 15
+    lda AUD0CTLB
+    and #$F0
+    sta _g_results + 16
+    lda AUD0OUT
+    sta _g_results + 17
+    rts
+.endproc
+
+;===================================================================
 ; Main test runner function
 ;===================================================================
 _run_tests:
@@ -441,6 +525,7 @@ _run_tests:
     jsr Test3
     jsr Test4
     jsr Test5
+    jsr Test6
     jsr ResetChannels
     cli                 ; Re-enable interrupts
     rts
