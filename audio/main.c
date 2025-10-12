@@ -5,7 +5,7 @@
 #include "util.h"
 
 #define RESULT_COUNT 18
-#define TEST_COUNT 7
+#define TEST_COUNT 6
 
 extern void run_tests(void);
 static void init(void);
@@ -21,14 +21,12 @@ static const expected_result_t k_expected_results[RESULT_COUNT] =
     EXPECT(0x08), EXPECT(0x00), EXPECT(0x7F),
     EXPECT(0xFF), EXPECT(0xFE), EXPECT(0xFD), EXPECT(0x0F), EXPECT(0x80),
     EXPECT(0xED), EXPECT(0x10), EXPECT(0x7F),
-    EXPECT(0x00),
-    EXPECT(0x00),
-    EXPECT(0x00),
-    EXPECT(0x00)
+    EXPECT(0x80),
+    EXPECT(0x00), EXPECT(0x00), EXPECT(0x00)
 };
 
-static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 3, 6, 11, 14, 15, 16 };
-static const uint8_t k_test_counts[TEST_COUNT]  = { 3, 3, 5, 3,  1,  1,  1 };
+static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 3, 6, 11, 14, 15 };
+static const uint8_t k_test_counts[TEST_COUNT]  = { 3, 3, 5, 3,  1,  3  };
 
 static const char* k_test_names[TEST_COUNT] =
 {
@@ -37,8 +35,7 @@ static const char* k_test_names[TEST_COUNT] =
     "INTEGRATE",
     "MAX LENGTH",
     "CLIPPING",
-    "..",
-    ".."
+    "LONG TEST"
 };
 
 void main(void)

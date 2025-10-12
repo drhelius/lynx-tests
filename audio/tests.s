@@ -230,7 +230,7 @@
     and #$F0
     sta t4_seed_hi
 
-    ;----- generate many borrows quickly
+    ; Generate many borrows quickly
     lda #$04
     sta AUD0BKUP
     sta AUD0CNT
@@ -291,6 +291,145 @@
     rts
 .endproc
 
+;===================================================================
+; Test 5: CH0 integrator clipping (saturation & recovery)
+; Deterministic sign per-borrow by forcing SHIFT bit0 before each step.
+; Result at _g_results + 14: final AUD0OUT (single byte)
+;===================================================================
+.proc Test5
+.segment "ZEROPAGE"
+    t5_base_nc:  .res 1     ; CTLA base without ENABLE_COUNT
+    t5_base_c:   .res 1     ; CTLA base with ENABLE_COUNT
+    t5_iter:     .res 1
+.segment "CODE"
+    jsr ResetChannels
+
+    ; Integrate step (±0x1F)
+    lda #$1F
+    sta AUD0VOL
+
+    ; Generate many borrows quickly
+    lda #$01
+    sta AUD0BKUP
+    sta AUD0CNT
+
+    lda #(ENABLE_RELOAD | ENABLE_INTEGRATE | 6)
+    sta t5_base_nc
+    ora #ENABLE_COUNT
+    sta t5_base_c
+
+    ;-------------------------------
+    ; Phase A: push OUT up to +rail
+    ;-------------------------------
+    lda #$00
+    sta AUD0FEED          ; taps don't matter now
+
+    ; Drive to high rail  by detecting no-change between two ADD steps
+    @ramp_to_rail:
+        ; ---- First ADD step ----
+        lda t5_base_nc
+        sta AUD0CTLA
+        lda #$01
+        sta AUD0SHIFT         ; LSB=1 (add)
+        lda t5_base_c
+        sta AUD0CTLA
+    @wait_done_add1:
+        lda AUD0CTLB
+        and #$08
+        beq @wait_done_add1
+        lda AUD0OUT
+        sta t5_iter           ; reuse t5_iter as temp: prev OUT
+        ; Clear DONE
+        lda t5_base_c
+        ora #$40
+        sta AUD0CTLA
+
+        ; ---- Second ADD step ----
+        lda t5_base_nc
+        sta AUD0CTLA
+        lda #$01
+        sta AUD0SHIFT         ; LSB=1 (add)
+        lda t5_base_c
+        sta AUD0CTLA
+    @wait_done_add2:
+        lda AUD0CTLB
+        and #$08
+        beq @wait_done_add2
+        lda AUD0OUT           ; curr OUT
+        cmp t5_iter
+        beq @at_high_clamp    ; no change across two adds => saturated high
+
+        ; Not yet clamped: clear DONE and keep ramping
+        lda t5_base_c
+        ora #$40
+        sta AUD0CTLA
+        bra @ramp_to_rail
+
+    @at_high_clamp:
+        ; Clear DONE before moving to negative steps
+        lda t5_base_c
+        ora #$40
+        sta AUD0CTLA
+
+    ;-------------------------------
+    ; Phase B: ramp down to -rail
+    ;-------------------------------
+@ramp_to_low_rail:
+    ; ---- First SUB step ----
+    lda t5_base_nc
+    sta AUD0CTLA
+    lda #$01
+    sta AUD0FEED          ; tap bit0 only
+    lda #$01
+    sta AUD0SHIFT         ; ensure lfsr bit0 = 1 => data_in=0 (SUB)
+    lda t5_base_c
+    sta AUD0CTLA
+@wait_done_sub1:
+    lda AUD0CTLB
+    and #$08
+    beq @wait_done_sub1
+    lda AUD0OUT
+    sta t5_iter           ; reuse t5_iter as prev OUT
+    ; Clear DONE
+    lda t5_base_c
+    ora #$40
+    sta AUD0CTLA
+
+    ; ---- Second SUB step ----
+    lda t5_base_nc
+    sta AUD0CTLA
+    lda #$01
+    sta AUD0FEED          ; keep tap bit0
+    lda #$01
+    sta AUD0SHIFT         ; keep lfsr bit0 = 1
+    lda t5_base_c
+    sta AUD0CTLA
+@wait_done_sub2:
+    lda AUD0CTLB
+    and #$08
+    beq @wait_done_sub2
+
+    lda AUD0OUT           ; curr OUT
+    cmp t5_iter
+    beq @at_low_clamp     ; no change across two SUBs => saturated low
+
+    ; Not yet clamped: clear DONE and keep ramping down
+    lda t5_base_c
+    ora #$40
+    sta AUD0CTLA
+    bra @ramp_to_low_rail
+
+@at_low_clamp:
+    ; Clear DONE and store final OUT (expected $80)
+    lda t5_base_c
+    ora #$40
+    sta AUD0CTLA
+
+    lda AUD0OUT
+    sta _g_results + 14
+
+    rts
+.endproc
 
 ;===================================================================
 ; Main test runner function
@@ -301,6 +440,7 @@ _run_tests:
     jsr Test2
     jsr Test3
     jsr Test4
+    jsr Test5
     jsr ResetChannels
     cli                 ; Re-enable interrupts
     rts
