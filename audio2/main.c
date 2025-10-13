@@ -18,15 +18,15 @@ extern volatile uint8_t g_results[RESULT_COUNT];
 static const expected_result_t k_expected_results[RESULT_COUNT] =
 {
     EXPECT(0x0A), EXPECT(0x08), EXPECT(0x34),
+    EXPECT(0x0A), EXPECT(0x04), EXPECT(0x78), EXPECT(0x70),
     EXPECT(0x00), EXPECT(0x00), EXPECT(0x00),
     EXPECT(0x00), EXPECT(0x00), EXPECT(0x00),
     EXPECT(0x00), EXPECT(0x00), EXPECT(0x00),
-    EXPECT(0x00), EXPECT(0x00), EXPECT(0x00),
-    EXPECT(0x00), EXPECT(0x00), EXPECT(0x00)
+    EXPECT(0x00), EXPECT(0x00)
 };
 
-static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 3, 6, 11, 14, 15 };
-static const uint8_t k_test_counts[TEST_COUNT]  = { 3, 3, 5, 3,  1,  3  };
+static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 3, 7, 11, 14, 15 };
+static const uint8_t k_test_counts[TEST_COUNT]  = { 3, 3, 4, 1,  1, 1  };
 
 static const char* k_test_names[TEST_COUNT] =
 {
