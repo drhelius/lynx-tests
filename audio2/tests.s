@@ -348,6 +348,258 @@
 .endproc
 
 ;===================================================================
+; Test 4: CH0 free-run prescaler hot-switch (6 -> 5)
+; Run CH0 for 50 iterations (DONE events) at prescaler $6, then switch
+; CTRLA prescaler to $5 on-the-fly and run 50 more iterations.
+; Results at _g_results + 11..12:
+;===================================================================
+.proc Test4
+.segment "ZEROPAGE"
+    pre_iter:   .res 1
+    post_iter:  .res 1
+    ch0_ctla:   .res 1
+
+.segment "CODE"
+    jsr ResetTimers
+
+    stz pre_iter
+    stz post_iter
+
+    lda #$03
+    sta AUD0VOL
+
+    lda #$5A
+    sta AUD0SHIFT
+    lda #%10110000
+    sta AUD0CTLB
+    lda #$FF
+    sta AUD0FEED
+
+    lda #$00
+    sta AUD0BKUP
+    sta AUD0CNT
+
+    lda #(ENABLE_RELOAD | ENABLE_COUNT | ENABLE_INTEGRATE | $06)
+    sta ch0_ctla
+    sta AUD0CTLA
+
+    ; -------- Phase 1: 50 iterations at prescaler $6 --------
+@loop_pre:
+    ; wait for CH0 DONE
+    lda AUD0CTLB
+    and #$08
+    beq @loop_pre
+
+    inc pre_iter
+
+    ; clear DONE
+    lda ch0_ctla
+    ora #RESET_DONE
+    sta AUD0CTLA
+    lda ch0_ctla
+    sta AUD0CTLA
+
+    ; reached 50?
+    lda pre_iter
+    cmp #50
+    bcc @loop_pre
+
+    ; capture OUT just before the prescaler change
+    lda AUD0OUT
+    sta _g_results + 11
+
+    ; set prescaler to $5
+    lda #(ENABLE_RELOAD | ENABLE_COUNT | $05)
+    sta ch0_ctla
+    sta AUD0CTLA
+
+    ; -------- Phase 2: capture one iteration after the switch --------
+@wait_first_post:
+    lda AUD0CTLB
+    and #$08
+    beq @wait_first_post
+
+    ; clear DONE
+    lda ch0_ctla
+    ora #RESET_DONE
+    sta AUD0CTLA
+    lda ch0_ctla
+    sta AUD0CTLA
+
+    lda AUD0OUT
+    sta _g_results + 12
+    rts
+.endproc
+
+;===================================================================
+; Test 5: CH0 free-run, hot-switch FEEDBACK TAPS (no prescaler change)
+; Run 50 iterations with initial taps, capture OUT; switch taps on-the-fly;
+; Results at _g_results + 13..14:
+;===================================================================
+.proc Test5
+.segment "ZEROPAGE"
+    pre_iter:  .res 1
+    post_iter: .res 1
+    ch0_ctla:  .res 1
+
+.segment "CODE"
+    jsr ResetTimers
+
+    stz pre_iter
+    stz post_iter
+
+    lda #$03
+    sta AUD0VOL
+
+    lda #$44
+    sta AUD0SHIFT
+    lda #%10010000
+    sta AUD0CTLB
+    lda #$77
+    sta AUD0FEED
+
+    lda #$00
+    sta AUD0BKUP
+    sta AUD0CNT
+
+    lda #(ENABLE_RELOAD | ENABLE_COUNT | ENABLE_INTEGRATE | $06)
+    sta ch0_ctla
+    sta AUD0CTLA
+
+    ; -------- Phase 1: 50 iterations with initial feedback --------
+@loop_pre:
+    ; wait for CH0 DONE
+    lda AUD0CTLB
+    and #$08
+    beq @loop_pre
+
+    inc pre_iter
+
+    ; clear DONE
+    lda ch0_ctla
+    ora #RESET_DONE
+    sta AUD0CTLA
+    lda ch0_ctla
+    sta AUD0CTLA
+
+    lda pre_iter
+    cmp #50
+    bcc @loop_pre
+
+    ; capture OUT just before changing feedback taps
+    lda AUD0OUT
+    sta _g_results + 13
+
+    ; -------- change feedback taps --------
+    lda #$55
+    sta AUD0FEED
+    lda ch0_ctla
+    ora #%10000000
+    sta ch0_ctla
+    sta AUD0CTLA
+
+    ; -------- Capture one iteration after the switch --------
+@wait_first_post:
+    lda AUD0CTLB
+    and #$08
+    beq @wait_first_post
+
+    ; clear DONE
+    lda ch0_ctla
+    ora #RESET_DONE
+    sta AUD0CTLA
+    lda ch0_ctla
+    sta AUD0CTLA
+
+    lda AUD0OUT
+    sta _g_results + 14
+    rts
+.endproc
+
+;===================================================================
+; Test 6: CH0 free-run, hot-switch LFSR state
+; Run 50 iterations with initial LFSR, capture OUT; switch LFSR on-the-fly;
+; Results at _g_results + 15..16:
+;===================================================================
+.proc Test6
+.segment "ZEROPAGE"
+    pre_iter:  .res 1
+    post_iter: .res 1
+    ch0_ctla:  .res 1
+
+.segment "CODE"
+    jsr ResetTimers
+
+    stz pre_iter
+    stz post_iter
+
+    lda #$03
+    sta AUD0VOL
+
+    lda #$44
+    sta AUD0SHIFT
+    lda #%10010000
+    sta AUD0CTLB
+    lda #$11
+    sta AUD0FEED
+
+    lda #$00
+    sta AUD0BKUP
+    sta AUD0CNT
+
+    lda #(ENABLE_RELOAD | ENABLE_COUNT | ENABLE_INTEGRATE | $06)
+    sta ch0_ctla
+    sta AUD0CTLA
+
+    ; -------- Phase 1: 50 iterations with initial LFSR --------
+@loop_pre:
+    ; wait for CH0 DONE
+    lda AUD0CTLB
+    and #$08
+    beq @loop_pre
+
+    inc pre_iter
+
+    ; clear DONE
+    lda ch0_ctla
+    ora #RESET_DONE
+    sta AUD0CTLA
+    lda ch0_ctla
+    sta AUD0CTLA
+
+    lda pre_iter
+    cmp #50
+    bcc @loop_pre
+
+    ; capture OUT just before changing LFSR
+    lda AUD0OUT
+    sta _g_results + 15
+
+    ; -------- change LFSR state --------
+    lda #$11
+    sta AUD0SHIFT
+    lda #%01100000
+    sta AUD0CTLB
+
+    ; -------- Capture one iteration after the switch --------
+@wait_first_post:
+    lda AUD0CTLB
+    and #$08
+    beq @wait_first_post
+
+    ; clear DONE
+    lda ch0_ctla
+    ora #RESET_DONE
+    sta AUD0CTLA
+    lda ch0_ctla
+    sta AUD0CTLA
+
+    lda AUD0OUT
+    sta _g_results + 16
+    rts
+.endproc
+
+;===================================================================
 ; Main test runner function
 ;===================================================================
 _run_tests:
@@ -355,6 +607,9 @@ _run_tests:
     jsr Test1
     jsr Test2
     jsr Test3
+    jsr Test4
+    jsr Test5
+    jsr Test6
     jsr ResetTimers
     cli                 ; Re-enable interrupts
     rts

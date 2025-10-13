@@ -5,7 +5,7 @@
 #include "util.h"
 
 #define RESULT_COUNT 18
-#define TEST_COUNT 6
+#define TEST_COUNT 7
 
 extern void run_tests(void);
 static void init(void);
@@ -20,13 +20,14 @@ static const expected_result_t k_expected_results[RESULT_COUNT] =
     EXPECT(0x0A), EXPECT(0x08), EXPECT(0x34),
     EXPECT(0x0A), EXPECT(0x04), EXPECT(0x78), EXPECT(0x70),
     EXPECT(0x0A), EXPECT(0xA8), EXPECT(0x30, 0x34), EXPECT(0x10),
-    EXPECT(0x00), EXPECT(0x00), EXPECT(0x00),
-    EXPECT(0x00), EXPECT(0x00), EXPECT(0x00),
+    EXPECT(0x00), EXPECT(0xFD),
+    EXPECT(0xEE), EXPECT(0xEB),
+    EXPECT(0xD0), EXPECT(0xD3),
     EXPECT(0x00)
 };
 
-static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 3, 7, 11, 12, 13 };
-static const uint8_t k_test_counts[TEST_COUNT]  = { 3, 4, 4, 1, 1, 1  };
+static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 3, 7, 11, 13, 15, 17 };
+static const uint8_t k_test_counts[TEST_COUNT]  = { 3, 4, 4, 2,  2,  2,  1};
 
 static const char* k_test_names[TEST_COUNT] =
 {
@@ -35,7 +36,8 @@ static const char* k_test_names[TEST_COUNT] =
     "LINK CHAIN",
     "SPEED CHANGE",
     "FEEDB CHANGE",
-    "LFSR CHANGE"
+    "LFSR CHANGE",
+    "BUG L NIBBLE"
 };
 
 void main(void)
