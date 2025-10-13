@@ -230,12 +230,131 @@
 .endproc
 
 ;===================================================================
+; Test 3: Audio chain CH0 -> CH1 -> CH2 -> CH3 (propagation)
+; Each CH0 borrow propagates a borrow through CH1 and CH2 to CH3
+; Results at _g_results + 7..10:
+;===================================================================
+.proc Test3
+.segment "ZEROPAGE"
+    ch0_iter:   .res 1
+    ch0_ctla:   .res 1
+    ch3_out0:   .res 1
+
+.segment "CODE"
+    jsr ResetTimers
+
+    stz ch0_iter
+
+    lda #$10
+    sta AUD0VOL
+    sta AUD1VOL
+    sta AUD2VOL
+    sta AUD3VOL
+
+    lda #$55
+    sta AUD3SHIFT           ; shifter low bits = %01010101
+    lda #%01010000
+    sta AUD3CTLB            ; shifter bits 11..8 = %0101
+    lda #$FF
+    sta AUD3FEED            ; enable many feedback taps
+
+    ; snapshot initial CH0 OUT so we can verify it changes later
+    lda AUD3OUT
+    sta ch3_out0
+
+    ; CH0 free-run: BKUP=0 -> immediate borrow on first tick
+    lda #$00
+    sta AUD0BKUP
+    sta AUD0CNT
+    ; CH1 pass-through on first inbound tick
+    sta AUD1BKUP
+    sta AUD1CNT
+    ; CH2 pass-through on first inbound tick
+    sta AUD2BKUP
+    sta AUD2CNT
+    ; CH3 requires 10 inbound ticks to borrow out
+    lda #$09
+    sta AUD3BKUP
+    sta AUD3CNT
+
+    lda #(ENABLE_RELOAD | ENABLE_COUNT | $07)
+    sta AUD1CTLA
+    sta AUD2CTLA
+    sta AUD3CTLA
+
+    lda #(ENABLE_RELOAD | ENABLE_COUNT | $06)
+    sta ch0_ctla
+    sta AUD0CTLA
+
+@wait_ch0_done:
+    ; Wait for CH0 DONE
+    lda AUD0CTLB
+    and #$08
+    beq @wait_ch0_done
+
+    ; One CH0 DONE observed -> should have clocked CH1->CH2->CH3
+    inc ch0_iter
+
+    ; For the first 9 CH0 DONEs, CH3 must NOT have borrowed out yet
+    lda ch0_iter
+    cmp #10
+    beq @after_nine
+
+    lda AUD3CTLB
+    and #$08                ; CH3 timer done
+    bne @fail               ; If set too early -> fail
+
+@after_nine:
+    ; Reset CH0 Timer DONE
+    lda ch0_ctla
+    ora #RESET_DONE
+    sta AUD0CTLA
+    lda ch0_ctla
+    sta AUD0CTLA
+
+    ; Loop until 10 events
+    lda ch0_iter
+    cmp #10
+    bcc @wait_ch0_done
+
+    ; At this point CH3 DONE must be set
+    lda AUD3CTLB
+    and #$08
+    beq @fail
+
+    ; Verify CH3 OUT changed
+    lda AUD3OUT
+    cmp ch3_out0
+    beq @fail
+
+    lda ch0_iter
+    sta _g_results + 7      ; #1: CH0 DONEs counted (expect 10)
+    lda AUD3CTLB
+    sta _g_results + 8      ; #2: CH3 CTLB
+    lda AUD0CTLB
+    sta _g_results + 9      ; #3: CH0 CTLB
+    lda AUD3OUT
+    sta _g_results + 10     ; #4: CH3 OUT
+    rts
+
+@fail:
+    ; On failure, store 0xFF
+    lda #$FF
+    sta _g_results + 7
+    sta _g_results + 8
+    sta _g_results + 9
+    sta _g_results + 10
+    rts
+.endproc
+
+;===================================================================
 ; Main test runner function
 ;===================================================================
 _run_tests:
     sei                 ; Disable interrupts during testing
     jsr Test1
     jsr Test2
+    jsr Test3
     jsr ResetTimers
     cli                 ; Re-enable interrupts
     rts

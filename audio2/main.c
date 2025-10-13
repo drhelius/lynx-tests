@@ -19,14 +19,14 @@ static const expected_result_t k_expected_results[RESULT_COUNT] =
 {
     EXPECT(0x0A), EXPECT(0x08), EXPECT(0x34),
     EXPECT(0x0A), EXPECT(0x04), EXPECT(0x78), EXPECT(0x70),
+    EXPECT(0x0A), EXPECT(0xA8), EXPECT(0x30, 0x34), EXPECT(0x10),
     EXPECT(0x00), EXPECT(0x00), EXPECT(0x00),
     EXPECT(0x00), EXPECT(0x00), EXPECT(0x00),
-    EXPECT(0x00), EXPECT(0x00), EXPECT(0x00),
-    EXPECT(0x00), EXPECT(0x00)
+    EXPECT(0x00)
 };
 
-static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 3, 7, 11, 14, 15 };
-static const uint8_t k_test_counts[TEST_COUNT]  = { 3, 3, 4, 1,  1, 1  };
+static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 3, 7, 11, 12, 13 };
+static const uint8_t k_test_counts[TEST_COUNT]  = { 3, 4, 4, 1, 1, 1  };
 
 static const char* k_test_names[TEST_COUNT] =
 {
