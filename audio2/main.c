@@ -23,7 +23,7 @@ static const expected_result_t k_expected_results[RESULT_COUNT] =
     EXPECT(0x00), EXPECT(0xFD),
     EXPECT(0xEE), EXPECT(0xEB),
     EXPECT(0xD0), EXPECT(0xD3),
-    EXPECT(0x00)
+    EXPECT(0x2B)
 };
 
 static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 3, 7, 11, 13, 15, 17 };
@@ -37,7 +37,7 @@ static const char* k_test_names[TEST_COUNT] =
     "SPEED CHANGE",
     "FEEDB CHANGE",
     "LFSR CHANGE",
-    "BUG L NIBBLE"
+    "VOLUME $00"
 };
 
 void main(void)

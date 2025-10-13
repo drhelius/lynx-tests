@@ -600,6 +600,78 @@
 .endproc
 
 ;===================================================================
+; Test 7: CH0 VOL=0 with LFSR active
+; Run several borrows; verify AUD0OUT stays at 0 while LFSR advances
+; Result at _g_results + 17
+;===================================================================
+.proc Test7
+.segment "ZEROPAGE"
+    iter7:    .res 1
+    ch0_ctla: .res 1
+    init_lfsr:.res 1
+
+.segment "CODE"
+    jsr ResetTimers
+
+    stz iter7
+
+    lda #$00
+    sta AUD0VOL
+
+    lda #$B4            ; %1011_0100 -> taps at 11,10,5,4
+    sta AUD0FEED
+
+    lda #$A5
+    sta AUD0SHIFT
+    lda #%01110000
+    sta AUD0CTLB
+
+    lda #$00
+    sta AUD0BKUP
+    sta AUD0CNT
+
+    lda #(ENABLE_RELOAD | ENABLE_COUNT | ENABLE_INTEGRATE | $06)
+    sta ch0_ctla
+    sta AUD0CTLA
+
+    ; Remember initial lower 8 bits of LFSR for comparison
+    lda AUD0SHIFT
+    sta init_lfsr
+
+@loop_7:
+    ; Wait for CH0 DONE
+    lda AUD0CTLB
+    and #$08
+    beq @loop_7
+
+    ; On each DONE, OUT must still be 0 when VOL=0
+    lda AUD0OUT
+    bne @fail_7
+
+    ; Clear DONE
+    lda ch0_ctla
+    ora #RESET_DONE
+    sta AUD0CTLA
+    lda ch0_ctla
+    sta AUD0CTLA
+
+    ; Iterate 16 DONEs to give time for LFSR to evolve
+    inc iter7
+    lda iter7
+    cmp #16
+    bcc @loop_7
+
+    lda AUD0SHIFT
+    sta _g_results + 17
+    rts
+
+@fail_7:
+    lda #$FF
+    sta _g_results + 17
+    rts
+.endproc
+
+;===================================================================
 ; Main test runner function
 ;===================================================================
 _run_tests:
@@ -610,6 +682,7 @@ _run_tests:
     jsr Test4
     jsr Test5
     jsr Test6
+    jsr Test7
     jsr ResetTimers
     cli                 ; Re-enable interrupts
     rts
