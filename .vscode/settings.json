@@ -1,5 +1,5 @@
 {
-    "current_test": "audio2",
+    "current_test": "uart",
     "files.exclude": {
         "**/*.o": true,
         "**/*.so": true,
