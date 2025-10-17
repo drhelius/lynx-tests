@@ -10,7 +10,7 @@
 
 ;-------------------------------------------------------------------
 .segment "BSS"
-    _g_results: .res 18
+    _g_results: .res 27
 
 ;-------------------------------------------------------------------
 .segment "RODATA"
@@ -78,17 +78,14 @@
     and #$80               ; B7 = TXRDY
     beq @wait_txrdy
 
-    ;----------------------------------------------------------------
-    ; Start TIMER6 stopwatch = 64us, BKUP=0 (1 tick = 64us)
-    ;----------------------------------------------------------------
+    ; Count TIMER6 ticks until TXEMPTY=1
+    stz t6_ticks
+
     stz TIM6BKUP
     stz TIM6CNT
     lda #(ENABLE_RELOAD | ENABLE_COUNT | $06)
     sta t6_ctla
     sta TIM6CTLA
-
-    ; Count TIMER6 ticks until TXEMPTY=1
-    stz t6_ticks
 
     ; Start transmission (11 bits)
     lda #$A5
@@ -167,14 +164,14 @@
     and #$80               ; B7 = TXRDY
     beq @wait_txrdy
 
+    ; Count TIMER6 ticks until TXEMPTY=1
+    stz t6_ticks
+
     stz TIM6BKUP
     stz TIM6CNT
     lda #(ENABLE_RELOAD | ENABLE_COUNT | $06)
     sta t6_ctla
     sta TIM6CTLA
-
-    ; Count TIMER6 ticks until TXEMPTY=1
-    stz t6_ticks
 
     ; Start transmission (11 bits)
     lda #$A5
@@ -275,14 +272,14 @@
     and #$80               ; B7 = TXRDY
     beq @wait_txrdy_before
 
+    ; Count TIMER6 ticks until TXEMPTY=1
+    stz t6_ticks
+
     stz TIM6BKUP
     stz TIM6CNT
     lda #(ENABLE_RELOAD | ENABLE_COUNT | $06)
     sta t6_ctla
     sta TIM6CTLA
-
-    ; Count TIMER6 ticks until TXEMPTY=1
-    stz t6_ticks
 
     ; Start measured transmission
     lda #$A5
@@ -383,14 +380,14 @@
     and #$80               ; B7 = TXRDY
     beq @wait_txrdy_before
 
+    ; Count TIMER6 ticks until TXRDY=1
+    stz t6_ticks
+
     stz TIM6BKUP
     stz TIM6CNT
     lda #(ENABLE_RELOAD | ENABLE_COUNT | $06)
     sta t6_ctla
     sta TIM6CTLA
-
-    ; Count TIMER6 ticks until TXRDY=1
-    stz t6_ticks
 
     ; Start measured transmission
     lda #$A5
@@ -429,6 +426,200 @@
     rts
 .endproc
 
+;-------------------------------------------------------------------
+; UART Test 5: Streaming -> measure until INT4 (TXRDY IRQ)
+;   - Warm up with 8 bytes paced by TXRDY
+;   - On the 9th byte: clear INTRST bit4, start TIMER6 (64us) and write SERDAT
+;   - Measure until INTRST bit4 (INT4 UART) = 1 => should match Test4
+;   - Results in _g_results + 16..19
+;-------------------------------------------------------------------
+.proc Test5
+.segment "ZEROPAGE"
+    idx:        .res 1
+    t6_ticks:   .res 1
+    t6_ctla:    .res 1
+    warmup:     .res 1
+
+.segment "CODE"
+
+    jsr ResetTimers
+
+    lda #%10000100         ; TXOPEN=1, TXINTEN=1
+    sta SERCTL
+
+    ldx #$00
+
+@loop_speed:
+    lda baud_backup,x
+    sta TIM4BKUP
+    sta TIM4CNT
+    lda #(ENABLE_RELOAD | ENABLE_COUNT | $00)
+    sta TIM4CTLA
+
+    ; Wait until TX is completely idle (TXEMPTY=1)
+@wait_empty_idle:
+    lda SERCTL
+    and #$20               ; B5 = TXEMPTY
+    beq @wait_empty_idle
+
+    ;----------------------------------------------------------------
+    ; Warm-up phase: send 8 bytes paced by TXRDY
+    ;----------------------------------------------------------------
+    lda #8
+    sta warmup
+
+@warmup_loop:
+    ; Wait until holding register is ready (TXRDY=1)
+    lda SERCTL
+    and #$80               ; B7 = TXRDY
+    beq @warmup_loop
+
+    lda #$A5
+    sta SERDAT
+
+    ; Continue until all warm-up bytes are sent
+    dec warmup
+    bne @warmup_loop
+
+    ;----------------------------------------------------------------
+    ; Wait for holding register to be ready before final measurement
+    ;----------------------------------------------------------------
+@wait_txrdy_before:
+    lda SERCTL
+    and #$80               ; B7 = TXRDY
+    beq @wait_txrdy_before
+
+    ; Count TIMER6 ticks until INT4=1
+    stz t6_ticks
+
+    ; Start TIMER6 = 64us/tick
+    stz TIM6BKUP
+    stz TIM6CNT
+    lda #(ENABLE_RELOAD | ENABLE_COUNT | $06)
+    sta t6_ctla
+    sta TIM6CTLA
+
+    ; Start measured transmission (this pulls TXRDY=0)
+    lda #$A5
+    sta SERDAT
+
+    ; Now clear pending INT4 so it won't be immediately re-asserted by the
+    ; pre-existing TXRDY=1 level. We want to measure until the NEXT TXRDY=1.
+    lda #$10
+    sta INTRST             ; $FD80
+
+@count_irq:
+    ; Is INT4 pending?
+    lda INTRST
+    and #$10
+    bne @done_one
+
+    ; Has a 64us tick arrived?
+    lda TIM6CTLB
+    and #$08
+    beq @count_irq
+
+    ; +1 tick and clear DONE
+    inc t6_ticks
+    lda t6_ctla
+    ora #RESET_DONE
+    sta TIM6CTLA
+    lda t6_ctla
+    sta TIM6CTLA
+    bra @count_irq
+
+@done_one:
+    ; Store ticks (64us) in _g_results + 16..19
+    lda t6_ticks
+    sta _g_results + 16,x
+
+    ; Next speed
+    inx
+    cpx #4
+    bne @loop_speed
+    rts
+.endproc
+
+;-------------------------------------------------------------------
+; UART Test 6: TXBRK → measure until TXRDY when releasing break
+;   - With TXBRK=1, write SERDAT (data is held)
+;   - When releasing TXBRK: start TIMER6 and measure until TXRDY=1
+;   - Results in _g_results + 20..23
+;-------------------------------------------------------------------
+.proc Test6
+.segment "ZEROPAGE"
+    idx:        .res 1
+    t6_ticks:   .res 1
+    t6_ctla:    .res 1
+
+.segment "CODE"
+
+    jsr ResetTimers
+
+    ldx #$00
+
+@loop_speed:
+    ; Count TIMER6 ticks until TXRDY=1
+    stz t6_ticks
+
+    lda baud_backup,x
+    sta TIM4BKUP
+    sta TIM4CNT
+    lda #(ENABLE_RELOAD | ENABLE_COUNT | $00)
+    sta TIM4CTLA
+
+    ; Set SERCTL: TXOPEN=1, TXBRK=1, no parity, IRQs off
+    lda #%00000000
+    sta SERCTL
+    lda #%00000110            ; B2=TXOPEN, B1=TXBRK
+    sta SERCTL
+
+    ; Write a byte: it will be held while TXBRK=1
+    lda #$A5
+    sta SERDAT
+
+    ; Release break and start stopwatch
+    stz TIM6BKUP
+    stz TIM6CNT
+    lda #(ENABLE_RELOAD | ENABLE_COUNT | $06)
+    sta t6_ctla
+    sta TIM6CTLA
+
+    lda #%00000100            ; TXOPEN=1, BRK=0
+    sta SERCTL
+
+@count_txrdy:
+    ; Has holding register become ready?
+    lda SERCTL
+    and #$80                  ; TXRDY
+    bne @done_one
+
+    ; Has a 64us tick arrived?
+    lda TIM6CTLB
+    and #$08                  ; DONE
+    beq @count_txrdy
+
+    ; +1 tick and clear DONE
+    inc t6_ticks
+    lda t6_ctla
+    ora #RESET_DONE
+    sta TIM6CTLA
+    lda t6_ctla
+    sta TIM6CTLA
+    bra @count_txrdy
+
+@done_one:
+    ; Store ticks (64us) in _g_results + 20..23
+    lda t6_ticks
+    sta _g_results + 20,x
+
+    ; Next speed
+    inx
+    cpx #4
+    bne @loop_speed
+    rts
+.endproc
+
 ;===================================================================
 ; Main test runner function
 ;===================================================================
@@ -438,6 +629,9 @@ _run_tests:
     jsr Test2
     jsr Test3
     jsr Test4
+    jsr Test5
+    jsr Test6
+    stz SERCTL          ; Disable UART
     jsr ResetTimers
     cli                 ; Re-enable interrupts
     rts

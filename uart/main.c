@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "util.h"
 
-#define RESULT_COUNT 18
+#define RESULT_COUNT 27
 #define TEST_COUNT 6
 
 extern void run_tests(void);
@@ -17,16 +17,19 @@ extern volatile uint8_t g_results[RESULT_COUNT];
 
 static const expected_result_t k_expected_results[RESULT_COUNT] =
 {
-    EXPECT(0x14, 0x15), EXPECT(0x54, 0x55), EXPECT(0xA9, 0xAA), EXPECT(0x03, 0x04),
+    EXPECT(0x14, 0x15), EXPECT(0x53, 0x54), EXPECT(0xA9, 0xAA), EXPECT(0x03, 0x04),
     EXPECT(0x02, 0x03, 0x04), EXPECT(0x0D, 0x0E), EXPECT(0x1A, 0x1B), EXPECT(0x01, 0x02),
     EXPECT(0x24, 0x25), EXPECT(0x8F, 0x90), EXPECT(0x1E, 0x1F), EXPECT(0x06, 0x07),
     EXPECT(0x12, 0x13), EXPECT(0x48), EXPECT(0x8F, 0x90), EXPECT(0x03, 0x04),
+    EXPECT(0x12, 0x13), EXPECT(0x48), EXPECT(0x8F, 0x90), EXPECT(0x03, 0x04),
+    EXPECT(0x07, 0x08), EXPECT(0x46, 0x47), EXPECT(0x08F, 0x90), EXPECT(0x03, 0x04),
+    EXPECT(0x00),
     EXPECT(0x00),
     EXPECT(0x00),
 };
 
-static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 4, 8, 12, 16, 17 };
-static const uint8_t k_test_counts[TEST_COUNT]  = { 4, 4, 4, 4, 1, 1 };
+static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 4, 8, 12, 16, 20 };
+static const uint8_t k_test_counts[TEST_COUNT]  = { 4, 4, 4, 4, 4, 4 };
 
 static const char* k_test_names[TEST_COUNT] =
 {
@@ -34,8 +37,8 @@ static const char* k_test_names[TEST_COUNT] =
     "TXRDY IDLE",
     "TXEMPTY FULL",
     "TXRDY FULL",
-    ".",
-    "."
+    "TIME TO IRQ",
+    "TXBRK->TXRDY"
 };
 
 void main(void)
@@ -120,7 +123,7 @@ static void paint_debug_results(void)
 {
     char buf[4];
     int i;
-    int y = 9 * 9;
+    int y = 9 * 8;
     int x = 0;
 
     tgi_setcolor(COLOR_WHITE);
