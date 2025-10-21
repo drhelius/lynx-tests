@@ -76,7 +76,7 @@ Tests UART transmission timing at various baud rates using Timer6 to measure bit
 - **Test 5**: Streaming → measure until INT4 (TXRDY IRQ timing)
 - **Test 6**: TXBRK → measure until TXREADY when releasing break
 
-Tests at 4 baud rates: 62500, 9600, 4800, and 31250 bps.
+Tests at 4 baud rates: 1200, 2400, 9600 and 62500 bps.
 
 ### uart2/
 **UART Advanced Functionality Tests**
