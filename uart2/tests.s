@@ -231,8 +231,8 @@
     tmp:      .res 1
 
 .segment "RODATA"
-    pat_par:  .byte $55       ; 4 ones -> even
-    pat_imp:  .byte $01       ; 1 one -> odd
+    pat_even:  .byte $55       ; 4 ones -> even
+    pat_odd:   .byte $01       ; 1 one -> odd
 
 .segment "CODE"
 
@@ -280,7 +280,7 @@
     ; --- Case A: pattern with EVEN #ones (0x55)
     jsr WaitIdle
 
-    lda pat_par
+    lda pat_even
     sta SERDAT
 
 @wait_rx_even_par:
@@ -309,7 +309,7 @@
     ; --- Case B: pattern with ODD #ones (0x01)
     jsr WaitIdle
 
-    lda pat_imp
+    lda pat_odd
     sta SERDAT
 
 @wait_rx_even_imp:
@@ -355,7 +355,7 @@
     ; --- Case A: EVEN pattern (0x55)
     jsr WaitIdle
 
-    lda pat_par
+    lda pat_even
     sta SERDAT
 
 @wait_rx_odd_par:
@@ -384,7 +384,7 @@
     ; --- Case B: ODD pattern (0x01)
     jsr WaitIdle
 
-    lda pat_imp
+    lda pat_odd
     sta SERDAT
 
 @wait_rx_odd_imp:
@@ -439,11 +439,11 @@
     lda SERCTL
     and #$40
     beq @wait_rx_9b0
-.
+
     ; If PARBIT != 0, also expect PARERR=1
     lda SERCTL
     and #$01                    ; PARBIT
-    beq @parbit_match_9b0       ; 0 => match, don't check PARERR
+    beq @par9b0_done            ; 0 => match, skip PARERR check
 
     ; Mismatch: PARBIT != 0
     lda r_9b0
@@ -453,12 +453,11 @@
     ; On mismatch, PARERR should be 1.
     lda SERCTL
     and #$10                    ; PARERR?
-    bne @parerr_ok_9b0          ; 1 => ok
+    bne @par9b0_done            ; 1 => ok
     lda r_9err
     ora #$01                    ; b0: missing PARERR with PAREVEN=0
     sta r_9err
-@parerr_ok_9b0:
-@parbit_match_9b0:
+@par9b0_done:
     lda SERDAT
     lda r_9b0
     sta _g_results + 4
@@ -484,7 +483,7 @@
     ; If PARBIT != 1, also expect PARERR=1
     lda SERCTL
     and #$01
-    bne @parbit_match_9b1       ; 1 => match, don't check PARERR
+    bne @par9b1_done            ; 1 => match, skip PARERR check
 
     ; Mismatch: PARBIT != 1
     lda r_9b1
@@ -494,12 +493,11 @@
     ; On mismatch, PARERR should be 1
     lda SERCTL
     and #$10                    ; PARERR?
-    bne @parerr_ok_9b1          ; 1 => ok
+    bne @par9b1_done            ; 1 => ok
     lda r_9err
     ora #$02                    ; b1: missing PARERR with PAREVEN=1
     sta r_9err
-@parerr_ok_9b1:
-@parbit_match_9b1:
+@par9b1_done:
     lda SERDAT
     lda r_9b1
     sta _g_results + 5
