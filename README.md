@@ -1,5 +1,10 @@
 # Lynx Hardware Tests
 
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/drhelius/lynx-tests/build.yml)](https://github.com/drhelius/lynx-tests/actions/workflows/build.yml)
+[![GitHub Releases)](https://img.shields.io/github/v/tag/drhelius/lynx-tests?label=version)](https://github.com/drhelius/lynx-tests/releases)
+[![License](https://img.shields.io/github/license/drhelius/lynx-tests)](https://github.com/drhelius/lynx-tests/blob/main/LICENSE)
+[![Twitter Follow](https://img.shields.io/twitter/follow/drhelius)](https://x.com/drhelius)
+
 Hardware tests for the Atari Lynx.
 
 ## Test Suites
