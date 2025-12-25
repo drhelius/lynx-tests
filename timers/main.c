@@ -17,10 +17,13 @@ extern volatile uint8_t g_results[RESULT_COUNT];
 
 static const expected_result_t k_expected_results[RESULT_COUNT] =
 {
-    EXPECT(0x08), EXPECT(0x7F), EXPECT(0x00), EXPECT(0x08),
-    EXPECT(0x00), EXPECT(0x01), EXPECT(0x08), EXPECT(0x00),
+    EXPECT(0x08), EXPECT(0x7F), EXPECT(0x00),
+    EXPECT(0x08), EXPECT(0x00),
+    EXPECT(0x01), EXPECT(0x08), EXPECT(0x00),
     EXPECT(0x04, 0x05), EXPECT(0x08), EXPECT(0x00), EXPECT(0x35, 0x36, 0x37),
-    EXPECT(0x00), EXPECT(0x01), EXPECT(0x0D), EXPECT(0x08),
+    EXPECT(0x00), EXPECT(0x01),
+    EXPECT(0x0D),
+    EXPECT(0x08),
 };
 
 static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 3, 5, 8, 12, 14, 15 };
