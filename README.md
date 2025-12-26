@@ -34,6 +34,19 @@ Tests audio channel linking functionality and dynamic parameter changes without 
 - **Test 6**: CH0 free-run hot-switch LFSR state (change LFSR value dynamically)
 - **Test 7**: CH0 VOL=0 with LFSR active (verify OUT stays at 0 while LFSR advances)
 
+### cpu/
+**65C02/65SC02 CPU Tests**
+
+Tests some 65C02-specific behaviors and 65SC02 extensions.
+
+- **Test 1**: SEI/CLI IRQ latency (CLI allows pending IRQ after next instruction completes)
+- **Test 2**: D flag cleared on interrupt entry (65C02 behavior, restored after RTI)
+- **Test 3**: BCD arithmetic and flags (N/Z flags correct on 65C02, unlike NMOS 6502)
+- **Test 4**: BRK is 2 bytes (PC increments by 2, skipping signature byte)
+- **Test 5**: JMP (indirect) page boundary fix (65C02 corrects NMOS $xxFF bug)
+- **Test 6**: Illegal/reserved opcodes behave as NOP (tests 1-byte, 2-byte, and 3-byte NOPs)
+- **Test 7**: 65SC02 RMB/SMB/BBR/BBS instructions (Rockwell/WDC bit manipulation extensions)
+
 ### math/
 **Hardware Math Coprocessor Tests**
 
