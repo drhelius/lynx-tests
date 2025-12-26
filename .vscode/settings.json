@@ -1,5 +1,5 @@
 {
-    "current_test": "uart2",
+    "current_test": "cpu",
     "files.exclude": {
         "**/*.o": true,
         "**/*.so": true,
