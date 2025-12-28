@@ -46,6 +46,7 @@ Tests some 65C02-specific behaviors and 65SC02 extensions.
 - **Test 5**: JMP (indirect) page boundary fix (65C02 corrects NMOS $xxFF bug)
 - **Test 6**: Illegal/reserved opcodes behave as NOP (tests 1-byte, 2-byte, and 3-byte NOPs)
 - **Test 7**: 65SC02 RMB/SMB/BBR/BBS instructions (Rockwell/WDC bit manipulation extensions)
+- **Test 8**: Illegal 1-byte NOPs don't acknowledge IRQs (tests $x3 and $xB opcodes block IRQ servicing)
 
 ### math/
 **Hardware Math Coprocessor Tests**
