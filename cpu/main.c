@@ -5,7 +5,7 @@
 #include "util.h"
 
 #define RESULT_COUNT 18
-#define TEST_COUNT 7
+#define TEST_COUNT 8
 
 extern void run_tests(void);
 static void init(void);
@@ -18,12 +18,10 @@ extern volatile uint8_t g_results[RESULT_COUNT];
 static const expected_result_t k_expected_results[RESULT_COUNT] =
 {
     /* Test 1: SEI/CLI IRQ latency */
-    EXPECT(0x01),                       /* CLI: INC ran before IRQ (value = 1) */
-    EXPECT(0x01),                       /* IRQ was actually taken */
+    EXPECT(0x00),                       /* Pass=0, 1=INC fail, 2=IRQ not taken */
     
     /* Test 2: D flag cleared on interrupt */
-    EXPECT(0x00),                       /* D flag should be cleared in IRQ handler */
-    EXPECT(0x08),                       /* D flag should be restored after RTI */
+    EXPECT(0x00),                       /* Pass=0, 1=D not cleared, 2=D not restored */
     
     /* Test 3: BCD arithmetic and flags */
     EXPECT(0x52),                       /* 0x29 + 0x23 = 0x52 in BCD */
@@ -48,20 +46,25 @@ static const expected_result_t k_expected_results[RESULT_COUNT] =
     EXPECT(0x01),                       /* SMB0: bit 0 set */
     EXPECT(0x01),                       /* BBR0: branch taken */
     EXPECT(0x01),                       /* BBS0: branch taken */
+
+    /* Test 8: 1-byte illegal NOPs don't acknowledge IRQs */
+    EXPECT(0x00),                       /* Pass=0, non-zero=PC low byte where IRQ fired */
+    EXPECT(0x00),                       /* Pass=0 (IRQ inside block), 1=fail */
 };
 
-static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 2, 4, 9, 11, 12, 14 };
-static const uint8_t k_test_counts[TEST_COUNT]  = { 2, 2, 5, 2, 1, 2, 4 };
+static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 1, 2, 7, 9, 10, 12, 16 };
+static const uint8_t k_test_counts[TEST_COUNT]  = { 1, 1, 5, 2, 1, 2, 4, 2 };
 
 static const char* k_test_names[TEST_COUNT] =
 {
     "SEI/CLI",
     "D FLAG IRQ",
-    "BCD",
+    "BCD MATH",
     "BRK 2 BYTES",
     "JMP IND FIX",
-    "ILLEGAL OPS",
+    "UNDOC NOPS",
     "RMB/SMB/BBx",
+    "UNDC NOP IRQ",
 };
 
 void main(void)

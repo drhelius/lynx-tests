@@ -226,7 +226,7 @@
     jmp @wait_irq
 
 @done:
-    stx _g_results + 8    ; #1 Expected: $04-$05
+    stx _g_results + 8    ; #1 Expected: $04 or $05
 
     ; DONE bit should still be set
     lda TIM3CTLB
@@ -242,7 +242,7 @@
 
     ; Store remaining iterations when RESET_DONE was disabled
     lda iterations
-    sta _g_results + 11   ; #4 Expected: $35-$37
+    sta _g_results + 11   ; #4 Expected: $35, $36, or $37
     rts
 .endproc
 

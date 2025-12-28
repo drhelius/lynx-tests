@@ -102,11 +102,11 @@
     beq @fail
 
     lda ch3_iter
-    sta _g_results + 0      ; #1: how many CH3 DONEs we counted (expect 10)
+    sta _g_results + 0      ; #1: how many CH3 DONEs we counted (expect 10) Expected: $0A
     lda TIM1CTLB
-    sta _g_results + 1      ; #2: Timer1 CTLB
+    sta _g_results + 1      ; #2: Timer1 CTLB Expected: $08
     lda AUD3CTLB
-    sta _g_results + 2      ; #3: CH3 CTLB
+    sta _g_results + 2      ; #3: CH3 CTLB Expected: $34
     rts
 
 @fail:
@@ -209,14 +209,14 @@
     beq @fail
 
     lda t7_iter
-    sta _g_results + 3  ; #1: number of TIM7 DONEs we counted (expect 10)
+    sta _g_results + 3  ; #1: number of TIM7 DONEs we counted (expect 10) Expected: $0A
     lda TIM7CTLB
     and #$0F        ; mask out unused bits (they are LFSR btw)
-    sta _g_results + 4  ; #2: TIM7 CTLB
+    sta _g_results + 4  ; #2: TIM7 CTLB Expected: $04
     lda AUD0CTLB
-    sta _g_results + 5  ; #3: CH0 CTLB
+    sta _g_results + 5  ; #3: CH0 CTLB Expected: $78
     lda AUD0OUT
-    sta _g_results + 6  ; #4: CH0 OUT
+    sta _g_results + 6  ; #4: CH0 OUT Expected: $70
     rts
 
 @fail:
@@ -328,13 +328,13 @@
     beq @fail
 
     lda ch0_iter
-    sta _g_results + 7      ; #1: CH0 DONEs counted (expect 10)
+    sta _g_results + 7      ; #1: CH0 DONEs counted (expect 10) Expected: $0A
     lda AUD3CTLB
-    sta _g_results + 8      ; #2: CH3 CTLB
+    sta _g_results + 8      ; #2: CH3 CTLB Expected: $A8
     lda AUD0CTLB
-    sta _g_results + 9      ; #3: CH0 CTLB
+    sta _g_results + 9      ; #3: CH0 CTLB Expected: $30 or $34
     lda AUD3OUT
-    sta _g_results + 10     ; #4: CH3 OUT
+    sta _g_results + 10     ; #4: CH3 OUT Expected: $10
     rts
 
 @fail:
@@ -406,7 +406,7 @@
 
     ; capture OUT just before the prescaler change
     lda AUD0OUT
-    sta _g_results + 11
+    sta _g_results + 11     ; Expected: $00
 
     ; set prescaler to $5
     lda #(ENABLE_RELOAD | ENABLE_COUNT | $05)
@@ -427,7 +427,7 @@
     sta AUD0CTLA
 
     lda AUD0OUT
-    sta _g_results + 12
+    sta _g_results + 12     ; Expected: $FD
     rts
 .endproc
 
@@ -488,7 +488,7 @@
 
     ; capture OUT just before changing feedback taps
     lda AUD0OUT
-    sta _g_results + 13
+    sta _g_results + 13     ; Expected: $EE
 
     ; -------- change feedback taps --------
     lda #$55
@@ -512,7 +512,7 @@
     sta AUD0CTLA
 
     lda AUD0OUT
-    sta _g_results + 14
+    sta _g_results + 14     ; Expected: $EB
     rts
 .endproc
 
@@ -573,7 +573,7 @@
 
     ; capture OUT just before changing LFSR
     lda AUD0OUT
-    sta _g_results + 15
+    sta _g_results + 15     ; Expected: $D0
 
     ; -------- change LFSR state --------
     lda #$11
@@ -595,7 +595,7 @@
     sta AUD0CTLA
 
     lda AUD0OUT
-    sta _g_results + 16
+    sta _g_results + 16     ; Expected: $D3
     rts
 .endproc
 
@@ -667,7 +667,7 @@
 
 @fail_7:
     lda #$FF
-    sta _g_results + 17
+    sta _g_results + 17     ; Expected: $2B (or $FF on failure)
     rts
 .endproc
 

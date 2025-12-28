@@ -129,7 +129,7 @@
     sta r1
 @rxrdy_ok_two:
     lda r1
-    sta _g_results + 0
+    sta _g_results + 0      ; Expected: $00 (no errors with 2 bytes)
 
     ; Drain RX and clear errors before 3-byte case
 @drain_rx_two:
@@ -195,7 +195,7 @@
 @rxrdy_ok:
 
     lda r0
-    sta _g_results + 1
+    sta _g_results + 1      ; Expected: $00 (no errors with 3 bytes, OVRERR should be set)
 
     ; drain 1 RX byte to leave clean for subsequent tests
     lda SERCTL
@@ -412,7 +412,7 @@
 
     ; Store odd result
     lda r_odd
-    sta _g_results + 3
+    sta _g_results + 3      ; Expected: $00 (no errors with odd parity)
 
     ;===============================================================
     ; 3) PAREN=0, 9th bit = PAREVEN, verify PARBIT == PAREVEN
@@ -460,7 +460,7 @@
 @par9b0_done:
     lda SERDAT
     lda r_9b0
-    sta _g_results + 4
+    sta _g_results + 4      ; Expected: $00 (PARBIT=PAREVEN=0)
 
     ; --- PAREVEN=1 -> expect PARBIT=1, PARERR=0
     lda #%00000101              ; TXOPEN=1, PAREN=0, PAREVEN=1
@@ -500,11 +500,11 @@
 @par9b1_done:
     lda SERDAT
     lda r_9b1
-    sta _g_results + 5
+    sta _g_results + 5      ; Expected: $00 (PARBIT=PAREVEN=1)
 
     ; Store PARERR summary for PAREN=0
     lda r_9err
-    sta _g_results + 6
+    sta _g_results + 6      ; Expected: $00 (no PARERR errors in 9-bit mode)
 
     rts
 .endproc
@@ -652,7 +652,7 @@
     lda SERDAT
 
     lda r0
-    sta _g_results + 7
+    sta _g_results + 7      ; Expected: $00 (PAREVEN change applied correctly)
 
     ;===============================================================
     ; (B) CHANGE BETWEEN FRAMES: PAREN 1->0 (2nd uses 9th bit = PAREVEN)
@@ -736,7 +736,7 @@
     lda SERDAT
 
     lda r1
-    sta _g_results + 8
+    sta _g_results + 8      ; Expected: $00 (PAREN change applied correctly)
 
     ;===============================================================
     ; (C) CHANGE UNDER BREAK: PAREVEN 1->0 with TXBRK=1 (applies on release)
@@ -798,7 +798,7 @@
     lda SERDAT
 
     lda r2
-    sta _g_results + 9
+    sta _g_results + 9      ; Expected: $00 (PAREVEN change under break applied correctly)
 
     ;===============================================================
     ; (D) CHANGE UNDER BREAK: PAREN 1->0 (9th=PAREVEN) with TXBRK=1
@@ -864,7 +864,7 @@
     lda SERDAT
 
     lda r3
-    sta _g_results + 10
+    sta _g_results + 10     ; Expected: $00 (PAREN change under break applied correctly)
 
     rts
 .endproc
@@ -1024,7 +1024,7 @@
 @txrdy_ok:
 
     lda r
-    sta _g_results + 11
+    sta _g_results + 11     ; Expected: $00 (holding register behavior correct)
 
     rts
 .endproc
@@ -1155,7 +1155,7 @@
     bra @drain_rx3
 @done:
     lda r
-    sta _g_results + 12
+    sta _g_results + 12     ; Expected: $00 (interrupt pending cleared only by INTRST)
     rts
 .endproc
 

@@ -123,7 +123,7 @@
     sta _g_results + 4    ; #2 Expected: $00 (counter should be zero)
 
     lda AUD0OUT
-    sta _g_results + 5    ; #3 Expected: $00
+    sta _g_results + 5    ; #3 Expected: $7F
 
     rts
 .endproc

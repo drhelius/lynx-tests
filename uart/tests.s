@@ -113,6 +113,7 @@
 
 @done_one_speed:
     ; Store ticks (64us) in _g_results + 0..3
+    ; Expected: $14 or $15 for 9600 bps, $53 or $54 for 2400 bps, $A9 or $AA for 1200 bps, $03 or $04 for 62500 bps
     lda t6_ticks
     sta _g_results + 0,x
 
@@ -198,7 +199,8 @@
     bra @count_loop
 
 @done_one_speed:
-    ; Store ticks (64us) in _g_results + 0..3
+    ; Store ticks (64us) in _g_results + 4..7
+    ; Expected: $02 or $03 or $04 for 9600 bps, $0D or $0E for 2400 bps, $1A or $1B for 1200 bps, $01 or $02 for 62500 bps
     lda t6_ticks
     sta _g_results + 4,x
 
@@ -307,6 +309,7 @@
 
 @done_one_speed:
     ; Store ticks (64us) in _g_results + 8..11
+    ; Expected: $24 or $25 for 9600 bps, $8F or $90 for 2400 bps, $1E or $1F for 1200 bps, $06 or $07 for 62500 bps
     lda t6_ticks
     sta _g_results + 8,x
 
@@ -415,6 +418,7 @@
 
 @done_one_speed:
     ; Store ticks (64us) in _g_results + 12..15
+    ; Expected: $12 or $13 for 9600 bps, $48 for 2400 bps, $8F or $90 for 1200 bps, $03 or $04 for 62500 bps
     lda t6_ticks
     sta _g_results + 12,x
 
@@ -530,6 +534,7 @@
 
 @done_one:
     ; Store ticks (64us) in _g_results + 16..19
+    ; Expected: $12 or $13 for 9600 bps, $48 for 2400 bps, $8F or $90 for 1200 bps, $03 or $04 for 62500 bps
     lda t6_ticks
     sta _g_results + 16,x
 
@@ -610,6 +615,7 @@
 
 @done_one:
     ; Store ticks (64us) in _g_results + 20..23
+    ; Expected: $07 or $08 for 9600 bps, $46 or $47 for 2400 bps, $8F or $90 for 1200 bps, $03 or $04 for 62500 bps
     lda t6_ticks
     sta _g_results + 20,x
 
