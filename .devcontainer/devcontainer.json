@@ -1,0 +1,42 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+{
+	"name": "cc65",
+	"image": "mcr.microsoft.com/devcontainers/base:alpine-3.21",
+
+	"features": {	
+		"ghcr.io/atarilynx/devcontainers-features/cc65:latest": {
+			"version": "latest"
+		},
+		"ghcr.io/atarilynx/devcontainers-features/lynxenc:latest": {},
+		"ghcr.io/atarilynx/devcontainers-features/make_lnx:latest": {},
+		"ghcr.io/atarilynx/devcontainers-features/sprpck:latest": {}
+	},
+
+	// Set *default* container specific settings.json values on container create. 
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"terminal.integrated.shell.linux": "/bin/ash"
+			},
+			"extensions": [
+				"ms-vscode.makefile-tools",
+				"ms-vscode.hexeditor",
+				"ms-vscode.cpptools-extension-pack"
+			]
+		}
+	},
+
+	"postCreateCommand": "cc65 --version",
+	
+	"remoteEnv": {
+		"CC65_HOME": "/usr/share/cc65/",
+		"CC65_INC": "/usr/share/cc65/include",
+		"CA65_INC": "/usr/share/cc65/asminc",
+		"LD65_CFG": "/usr/share/cc65/cfg",
+		"LD65_LIB": "/usr/share/cc65/lib",
+		"LD65_OBJ": "/usr/share/cc65/obj"
+	},
+
+	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "vscode"
+}
