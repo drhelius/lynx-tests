@@ -194,13 +194,13 @@ void main(void)
     create_checkerboard();
     init_display();
 
-    current_pbkup = calculate_pbkup(current_t0_backup);
-
     update_display();
 
     install_isrs();
 
     CLI();
+
+    prev_buttons = JOYSTICK_REG;
 
     for (;;)
     {
