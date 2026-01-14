@@ -19,6 +19,21 @@
                     }
                 ],
             },
+            "linux": {
+                "command": "make -f ${workspaceFolder}/${config:current_test}/Makefile clean",
+                "options": {
+                    "cwd": "${workspaceFolder}/${config:current_test}"
+                },
+                "problemMatcher": [
+                    {
+                        "base": "$gcc",
+                        "fileLocation": [
+                            "relative",
+                            "${workspaceFolder}/${config:current_test}"
+                        ]
+                    }
+                ],
+            },
             "presentation": {
                 "reveal": "silent",
                 "panel": "dedicated",
@@ -33,6 +48,21 @@
             "type": "shell",
             "label": "Build (DEBUG)",
             "osx": {
+                "command": "make -f ${workspaceFolder}/${config:current_test}/Makefile",
+                "options": {
+                    "cwd": "${workspaceFolder}/${config:current_test}"
+                },
+                "problemMatcher": [
+                    {
+                        "base": "$gcc",
+                        "fileLocation": [
+                            "relative",
+                            "${workspaceFolder}/${config:current_test}"
+                        ]
+                    }
+                ],
+            },
+            "linux": {
                 "command": "make -f ${workspaceFolder}/${config:current_test}/Makefile",
                 "options": {
                     "cwd": "${workspaceFolder}/${config:current_test}"
