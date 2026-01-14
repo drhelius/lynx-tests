@@ -79,6 +79,7 @@ Interactive test for altering display timing.
   - **A/B buttons**: Adjust Timer 0 backup value (0-255), which controls line timing and refresh rate. PBKUP is automatically calculated.
   - **UP/DOWN buttons**: Directly adjust PBKUP value (0-255) for fine-tuning.
   - **LEFT/RIGHT buttons**: Adjust Timer 2 backup value (0-255), which controls vertical line count.
+  - **Option 1**: Reset all values to defaults (T0=158, PBKUP=41, T2=104).
 
 - **Display**: 
   - **First row**: T0 backup, and PBKUP

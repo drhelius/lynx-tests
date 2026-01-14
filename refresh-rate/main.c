@@ -31,6 +31,7 @@
 #define BTN_DOWN            0x40
 #define BTN_LEFT            0x20
 #define BTN_RIGHT           0x10
+#define BTN_OPT1            0x08
 
 static uint8_t prev_buttons = 0xFF;
 static uint8_t current_t0_backup = DEFAULT_T0_BACKUP;
@@ -265,6 +266,15 @@ void main(void)
                 TIM2_BKUP = current_t2_backup;
                 changed = 1;
             }
+        }
+
+        if (button_pressed(BTN_OPT1, buttons, prev_buttons))
+        {
+            new_t0_backup = DEFAULT_T0_BACKUP;
+            new_pbkup = DEFAULT_PBKUP;
+            current_t2_backup = DEFAULT_T2_BACKUP;
+            TIM2_BKUP = current_t2_backup;
+            changed = 1;
         }
 
         if (changed)
