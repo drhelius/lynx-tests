@@ -70,6 +70,20 @@ Tests read/write functionality of Mikey and Suzy chip registers.
 - **Test 1**: Mikey color registers at $FDB0-$FDBF (write/read patterns: $00, $FF, $55, $AA)
 - **Test 2**: Suzy registers at $FC00-$FC2F (write/read patterns: $00, $FF, $55, $AA)
 
+### refresh-rate/
+**LCD Configuration Test**
+
+Interactive test for altering display timing.
+
+- **Controls**:
+  - **A/B buttons**: Adjust Timer 0 backup value (0-255), which controls line timing and refresh rate. PBKUP is automatically calculated.
+  - **UP/DOWN buttons**: Directly adjust PBKUP value (0-255) for fine-tuning.
+  - **LEFT/RIGHT buttons**: Adjust Timer 2 backup value (0-255), which controls vertical line count.
+
+- **Display**: 
+  - **First row**: T0 backup, and PBKUP
+  - **Second row**: T2 backup.
+
 ### timers/
 **Hardware Timer Tests**
 

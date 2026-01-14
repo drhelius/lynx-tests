@@ -1,5 +1,5 @@
 {
-    "current_test": "cpu",
+    "current_test": "refresh-rate",
     "files.exclude": {
         "**/*.o": true,
         "**/*.so": true,
