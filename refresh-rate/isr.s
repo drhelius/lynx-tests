@@ -154,10 +154,10 @@ MikeyInitReg:
 
 ; Mikey register values
 MikeyInitData:
-    .byte $9e       ; TIM0BKUP
-    .byte $18       ; TIM0CTLA
-    .byte $68       ; TIM2BKUP
-    .byte $1f       ; TIM2CTLA
+    .byte $9e       ; TIM0BKUP = 158
+    .byte $98       ; TIM0CTLA = enable int + reload + count
+    .byte $68       ; TIM2BKUP = 104
+    .byte $9f       ; TIM2CTLA = enable int + reload + count + link to T0
     .byte $00       ; AUD0VOL
     .byte $00       ; AUD1VOL
     .byte $00       ; AUD2VOL
