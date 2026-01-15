@@ -21,6 +21,8 @@ Tests the Atari Lynx audio channels (Channel 0 and Channel 1) focusing on core t
 - **Test 5**: Integrator saturation and clipping (ramps to +rail and -rail)
 - **Test 6**: Long run with BKUP=$00/CNT=$00 and reload (4096 borrows, dense flow)
 
+---
+
 ### audio2/
 **Audio Channel Linking and Hot-Switching Tests**
 
@@ -33,6 +35,8 @@ Tests audio channel linking functionality and dynamic parameter changes without 
 - **Test 5**: CH0 free-run hot-switch feedback taps (change LFSR taps dynamically)
 - **Test 6**: CH0 free-run hot-switch LFSR state (change LFSR value dynamically)
 - **Test 7**: CH0 VOL=0 with LFSR active (verify OUT stays at 0 while LFSR advances)
+
+---
 
 ### cpu/
 **65C02/65SC02 CPU Tests**
@@ -48,6 +52,8 @@ Tests some 65C02-specific behaviors and 65SC02 extensions.
 - **Test 7**: 65SC02 RMB/SMB/BBR/BBS instructions (Rockwell/WDC bit manipulation extensions)
 - **Test 8**: Illegal 1-byte NOPs don't acknowledge IRQs (tests $x3 and $xB opcodes block IRQ servicing)
 
+---
+
 ### math/
 **Hardware Math Coprocessor Tests**
 
@@ -62,6 +68,8 @@ Tests the Atari Lynx hardware multiplier and divider including edge cases and ti
 - **Test 7**: Division by zero (should return $FFFFFFFF)
 - **Test 8**: Timing tests (measures multiplication and division cycle counts)
 
+---
+
 ### memio/
 **Memory-Mapped I/O Register Tests**
 
@@ -69,6 +77,8 @@ Tests read/write functionality of Mikey and Suzy chip registers.
 
 - **Test 1**: Mikey color registers at $FDB0-$FDBF (write/read patterns: $00, $FF, $55, $AA)
 - **Test 2**: Suzy registers at $FC00-$FC2F (write/read patterns: $00, $FF, $55, $AA)
+
+---
 
 ### refresh-rate/
 **LCD Configuration Test**
@@ -85,6 +95,8 @@ Interactive test for altering display timing.
   - **First row**: T0 backup, and PBKUP
   - **Second row**: T2 backup.
 
+---
+
 ### timers/
 **Hardware Timer Tests**
 
@@ -97,6 +109,8 @@ Tests the Atari Lynx hardware timers including interrupt generation and linking.
 - **Test 5**: Pre-set DONE bit behavior (prevents timer operation)
 - **Test 6**: Timer linking (Timer 5 linked to Timer 3)
 - **Test 7**: Reload mode DONE bit behavior
+
+---
 
 ### uart/
 **UART Transmission Timing Tests**
@@ -112,6 +126,8 @@ Tests UART transmission timing at various baud rates using Timer6 to measure bit
 
 Tests at 4 baud rates: 1200, 2400, 9600 and 62500 bps.
 
+---
+
 ### uart2/
 **UART Advanced Functionality Tests**
 
@@ -122,6 +138,8 @@ Tests UART parity, error handling, and edge cases.
 - **Test 3**: Dynamic parity changes between frames and during BREAK
 - **Test 4**: SERDAT holding register overflow (3 consecutive writes)
 - **Test 5**: Interrupt pending behavior (level-triggered + latched)
+
+---
 
 ## Building
 
