@@ -97,6 +97,20 @@ Interactive test for altering display timing.
 
 ---
 
+### page-mode/
+**CPU Page Mode Timing Tests**
+
+Tests the effect of MAPCTL page mode (bit 7) on CPU instruction timing.
+
+- **Test 1**: 1-byte NOP with page mode ON (200 iterations)
+- **Test 2**: 1-byte NOP with page mode OFF (200 iterations)
+- **Test 3**: 2-byte LDX #imm with page mode ON (200 iterations)
+- **Test 4**: 2-byte LDX #imm with page mode OFF (200 iterations)
+- **Test 5**: 3-byte LDA abs with page mode ON (100 iterations)
+- **Test 6**: 3-byte LDA abs with page mode OFF (100 iterations)
+
+---
+
 ### timers/
 **Hardware Timer Tests**
 
