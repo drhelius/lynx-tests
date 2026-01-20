@@ -1,5 +1,5 @@
 {
-    "current_test": "page-mode",
+    "current_test": "math",
     "files.exclude": {
         "**/*.o": true,
         "**/*.so": true,

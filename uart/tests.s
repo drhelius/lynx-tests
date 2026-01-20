@@ -20,6 +20,27 @@
 .segment "CODE"
 
 ;===================================================================
+; Wait for vertical blank
+;===================================================================
+.proc WaitVBlank
+    ; 1) If already at 0, wait until it reloads
+@wait_not0:
+    lda TIM2CNT
+    beq @wait_not0      ; if at 0, wait until it reloads
+
+    ; 2) Wait for counter to reach 0 (counts down)
+@wait_0:
+    lda TIM2CNT
+    bne @wait_0         ; wait until it reaches 0
+
+    ; 3) Wait for reload (0 -> non-zero = actual VBlank start)
+@wait_reload:
+    lda TIM2CNT
+    beq @wait_reload    ; wait until it reloads to high value
+    rts
+.endproc
+
+;===================================================================
 ; Reset all timers except TIMER 0 and TIMER 2
 ;===================================================================
 .proc ResetTimers
@@ -631,11 +652,17 @@
 ;===================================================================
 _run_tests:
     sei                 ; Disable interrupts during testing
+    jsr WaitVBlank
     jsr Test1
+    jsr WaitVBlank
     jsr Test2
+    jsr WaitVBlank
     jsr Test3
+    jsr WaitVBlank
     jsr Test4
+    jsr WaitVBlank
     jsr Test5
+    jsr WaitVBlank
     jsr Test6
     stz SERCTL          ; Disable UART
     jsr ResetTimers
