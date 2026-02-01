@@ -1,5 +1,5 @@
 {
-    "current_test": "math",
+    "current_test": "memio",
     "files.exclude": {
         "**/*.o": true,
         "**/*.so": true,
