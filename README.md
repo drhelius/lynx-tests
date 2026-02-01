@@ -75,7 +75,7 @@ Tests the Atari Lynx hardware multiplier and divider including edge cases and ti
 
 Tests read/write functionality of Mikey and Suzy chip registers.
 
-- **Test 1**: Mikey color registers at $FDB0-$FDBF (write/read patterns: $00, $FF, $55, $AA)
+- **Test 1**: Mikey color registers (Blue/Red at $FDB0-$FDBF, Green at $FDA0-$FDAF)
 - **Test 2**: Suzy registers at $FC00-$FC2F (write/read patterns: $00, $FF, $55, $AA)
 
 ---
