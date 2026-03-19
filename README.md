@@ -7,6 +7,8 @@
 
 Hardware tests for the Atari Lynx.
 
+<img width="500" src="https://github.com/user-attachments/assets/fe0bf130-8203-4683-a1a1-6675abadccfd" />
+
 ## Test Suites
 
 ### audio/
