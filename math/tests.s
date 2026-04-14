@@ -214,8 +214,11 @@
 
 ;===================================================================
 ; Test 3: Signed multiplication test
-; AB * CD = EFGH
-; FFFD * 0005 = FFFFFFF1 (-3 * 5 = -15)
+; Part 1: FFFD * 0005 = FFFFFFF1 (-3 * 5 = -15)
+; Part 2: Verify writing MATHD does NOT trigger signCD.
+;         After part 1, math_sign_C = true (CD was negative).
+;         Writing only MATHD (not MATHC) should preserve stale sign.
+;         0003 * 0005 with stale sign = FFFFFFF1 (-(3*5))
 ;===================================================================
 .proc Test3
     jsr ResetMath
@@ -262,6 +265,46 @@
     lda SPRSYS
     and #$64
     cmp #$24            ; No overflow expected, unsafe and last carry set
+    bne @fail
+
+    ; --- Part 2: MATHD write must NOT trigger signCD ---
+    ; math_sign_C is true from the FFFD multiply above.
+    ; Write only MATHD (zeros MATHC). If signCD fires, sign resets to false.
+
+    lda #$05
+    sta MATHD           ; CD = $0005 (MATHC zeroed). Should NOT run signCD.
+
+    lda #$03
+    sta MATHB           ; AB low = $03 (MATHA zeroed)
+
+    lda #$00
+    sta MATHA           ; Start signed multiply (AB = $0003)
+
+@wait_done2:
+    lda SPRSYS
+    and #$80
+    bne @wait_done2
+
+    ; Expecting EFGH = $FFFFFFF1 (stale math_sign_C = true)
+    ; Bug would give $0000000F (signCD reset math_sign_C to false)
+    ldx #$05
+    lda MATHE
+    cmp #$FF
+    bne @fail
+
+    ldx #$06
+    lda MATHF
+    cmp #$FF
+    bne @fail
+
+    ldx #$07
+    lda MATHG
+    cmp #$FF
+    bne @fail
+
+    ldx #$08
+    lda MATHH
+    cmp #$F1
     bne @fail
 
 @pass:
