@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/github/license/drhelius/lynx-tests)](https://github.com/drhelius/lynx-tests/blob/main/LICENSE)
 [![Twitter Follow](https://img.shields.io/twitter/follow/drhelius)](https://x.com/drhelius)
 
-Hardware tests for the Atari Lynx.
+Hardware tests for the Atari Lynx made by analyzing actual hardware.
 
 <img width="500" src="https://github.com/user-attachments/assets/fe0bf130-8203-4683-a1a1-6675abadccfd" />
 
