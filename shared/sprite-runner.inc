@@ -213,6 +213,10 @@
     lda current_dispctl
     sta DISPCTL
 
+.ifdef HAS_PREPARE_DRAW
+    jsr PrepareDraw
+.endif
+
     jsr PrepareTimer
     jsr WaitRaster96
 
@@ -284,6 +288,11 @@
     sta SPRSYS
     lda current_dispctl
     sta DISPCTL
+
+.ifdef HAS_PREPARE_DRAW
+    jsr PrepareDraw
+.endif
+
     jsr DrawSprites
     rts
 .endproc

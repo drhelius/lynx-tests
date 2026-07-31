@@ -1,7 +1,7 @@
 # Lynx Hardware Tests
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/drhelius/lynx-tests/build.yml)](https://github.com/drhelius/lynx-tests/actions/workflows/build.yml)
-[![GitHub Releases)](https://img.shields.io/github/v/tag/drhelius/lynx-tests?label=version)](https://github.com/drhelius/lynx-tests/releases)
+[![GitHub Releases](https://img.shields.io/github/v/tag/drhelius/lynx-tests?label=version)](https://github.com/drhelius/lynx-tests/releases)
 [![License](https://img.shields.io/github/license/drhelius/lynx-tests)](https://github.com/drhelius/lynx-tests/blob/main/LICENSE)
 [![Twitter Follow](https://img.shields.io/twitter/follow/drhelius)](https://x.com/drhelius)
 
@@ -11,17 +11,19 @@ Hardware tests for the Atari Lynx made by analyzing actual hardware.
 
 ## Test Suites
 
+Except for `refresh-rate/`, each suite runs its fixed tests once at startup and displays an abbreviated test name followed by `PASS` or a numeric failure diagnostic. Raw hexadecimal results are shown below the test list.
+
 ### audio/
 **Audio Channel Basic Functionality Tests**
 
 Tests the Atari Lynx audio channels (Channel 0 and Channel 1) focusing on core timer, LFSR (Linear Feedback Shift Register), and integrator behavior.
 
-- **Test 1**: CTLB register read/write and timer decrement behavior
-- **Test 2**: One-shot countdown mode with DONE flag polling
-- **Test 3**: Reload + integrate mode with LFSR running (captures first 3 outputs and final LFSR state)
-- **Test 4**: Maximal-length LFSR taps with non-trivial seed (48 borrows to ensure no short period)
-- **Test 5**: Integrator saturation and clipping (ramps to +rail and -rail)
-- **Test 6**: Long run with BKUP=$00/CNT=$00 and reload (4096 borrows, dense flow)
+- **Test 1 – CTLB RD/WR**: With CH0 CNT=$40, write CTLB=$0A and expect CTLB=$08 and CNT=$3F; clear CTLB and expect $00.
+- **Test 2 – ONESHOT**: Run CH0 one-shot at prescaler 6 with VOL=$7F, taps=$00, LFSR=$101, and BKUP/CNT=$F0; poll DONE and expect CTLB=$08, CNT=$00, and OUT=$7F.
+- **Test 3 – INTEGRATE**: Run CH0 reload+integrate at prescaler 6 with VOL=$FF, taps=$00, LFSR=$101, and BKUP/CNT=$F0; expect the first three OUT values $FF/$FE/$FD and final LFSR=$80F.
+- **Test 4 – MAX LENGTH**: Run CH0 reload at prescaler 6 with taps=$95, seed=$AB3, VOL=$7F, and BKUP/CNT=$04; reject an early seed repeat across 48 borrows and expect final LFSR=$1ED and OUT=$7F.
+- **Test 5 – CLIPPING**: Run CH0 reload+integrate at prescaler 6 with VOL=$1F and BKUP/CNT=$01; force positive steps to the high clamp and negative steps to the low clamp, then expect final OUT=$80.
+- **Test 6 – LONG TEST**: Run CH0 reload at prescaler 6 with feedback bit 7, VOL=$3F, taps=$95, seed=$D3A, and BKUP/CNT=$00; require CNT=$00 on all 4096 DONE events and expect final LFSR=$4EB and OUT=$3F.
 
 ---
 
@@ -30,13 +32,13 @@ Tests the Atari Lynx audio channels (Channel 0 and Channel 1) focusing on core t
 
 Tests audio channel linking functionality and dynamic parameter changes without stopping the audio.
 
-- **Test 1**: Audio CH3 → Timer1 link (10 CH3 DONE events should trigger Timer1 DONE)
-- **Test 2**: Timer7 → Audio CH0 link (10 Timer7 DONE events should trigger CH0 DONE)
-- **Test 3**: Audio chain CH0→CH1→CH2→CH3 propagation (cascading borrows)
-- **Test 4**: CH0 free-run prescaler hot-switch (switch from prescaler 6 to 5 on-the-fly)
-- **Test 5**: CH0 free-run hot-switch feedback taps (change LFSR taps dynamically)
-- **Test 6**: CH0 free-run hot-switch LFSR state (change LFSR value dynamically)
-- **Test 7**: CH0 VOL=0 with LFSR active (verify OUT stays at 0 while LFSR advances)
+- **Test 1 – LNK CH3 > T1**: CH3 reload at prescaler 6 with BKUP/CNT=$00 clocks linked Timer 1 with BKUP/CNT=$09; Timer 1 DONE must remain clear for nine CH3 DONE events and set on the tenth.
+- **Test 2 – LNK T7 > CH0**: Timer 7 reload at prescaler 6 with BKUP/CNT=$00 clocks linked CH0 with BKUP/CNT=$09, VOL=$70, taps=$FF, and seed=$BAA; CH0 DONE must set only on the tenth Timer 7 DONE and OUT must change to $70.
+- **Test 3 – LINK CHAIN**: CH0 reload at prescaler 6 clocks linked CH1→CH2→CH3; CH0–CH2 use BKUP/CNT=$00 and CH3 uses $09, so CH3 DONE and OUT=$10 are expected on the tenth CH0 DONE.
+- **Test 4 – SPEED CHANGE**: CH0 starts in reload+integrate mode at prescaler 6 with VOL=$03, taps=$FF, seed=$B5A, and BKUP/CNT=$00; after 50 DONE events OUT must be $00, then CTLA switches to reload mode at prescaler 5, disabling integration, and OUT must be $FD after one DONE event.
+- **Test 5 – FEEDB CHANGE**: CH0 reload+integrate at prescaler 6 with VOL=$03, seed=$944, taps=$77, and BKUP/CNT=$00; after 50 DONE events OUT must be $EE, then taps change to $55 with feedback bit 7 enabled and OUT must be $EB after one DONE event.
+- **Test 6 – LFSR CHANGE**: CH0 reload+integrate at prescaler 6 with VOL=$03, taps=$11, seed=$944, and BKUP/CNT=$00; after 50 DONE events OUT must be $D0, then the LFSR changes to $611 and OUT must be $D3 after one DONE event.
+- **Test 7 – VOLUME $00**: CH0 reload+integrate at prescaler 6 with VOL=$00, taps=$B4, seed=$7A5, and BKUP/CNT=$00; OUT must remain $00 across 16 DONE events and the final LFSR low byte must be $2B.
 
 ---
 
@@ -45,14 +47,14 @@ Tests audio channel linking functionality and dynamic parameter changes without 
 
 Tests some 65C02-specific behaviors and 65SC02 extensions.
 
-- **Test 1**: SEI/CLI IRQ latency (CLI allows pending IRQ after next instruction completes)
-- **Test 2**: D flag cleared on interrupt entry (65C02 behavior, restored after RTI)
-- **Test 3**: BCD arithmetic and flags (N/Z flags correct on 65C02, unlike NMOS 6502)
-- **Test 4**: BRK is 2 bytes (PC increments by 2, skipping signature byte)
-- **Test 5**: JMP (indirect) page boundary fix (65C02 corrects NMOS $xxFF bug)
-- **Test 6**: Illegal/reserved opcodes behave as NOP (tests 1-byte, 2-byte, and 3-byte NOPs)
-- **Test 7**: 65SC02 RMB/SMB/BBR/BBS instructions (Rockwell/WDC bit manipulation extensions)
-- **Test 8**: Illegal 1-byte NOPs don't acknowledge IRQs (tests $x3 and $xB opcodes block IRQ servicing)
+- **Test 1 – SEI/CLI**: With a Timer 6 IRQ pending, CLI must execute the following INC before entering the handler; expect the zero-page value to become $01, at least one IRQ, and result $00.
+- **Test 2 – D FLAG IRQ**: Enter a Timer 6 IRQ with the decimal flag set; expect D clear inside the handler, restored after RTI, and result $00.
+- **Test 3 – BCD MATH**: Expect $29+$23=$52, $29-$23=$06, carry set after $85+$25=$10, zero set after $99+$01=$00, and negative set after $40+$41=$81.
+- **Test 4 – BRK 2 BYTES**: Execute BRK,$EA and expect the $EA signature byte to be skipped, producing result $02. The companion $30 B/unused-bit result is hardcoded and does not inspect the pushed status.
+- **Test 5 – JMP IND FIX**: JMP ($30FF) must use the low byte at $30FF and high byte at $3100 to reach $3200; expect $BB rather than the NMOS-wrapped $66 target from $3000/$3300.
+- **Test 6 – UNDOC NOPS**: Reserved opcodes $5B, $44 $00, and $5C $FF $FF must act as 1-, 2-, and 3-byte NOPs, preserving A/X/Y and all status bits except masked B/unused bits; expect progress $03 and error $00.
+- **Test 7 – RMB/SMB/BBx**: RMB0 changes $FF→$FE, SMB0 changes $00→$01, BBR0 branches for $FE, and BBS0 branches for $01; expect $FE/$01/$01/$01.
+- **Test 8 – UNDC NOP IRQ**: Execute each of the 32 reserved $x3/$xB one-byte NOPs five times with an IRQ pending and require servicing only after the following INX; as a control, require an IRQ within 100 official $EA NOPs. Expect results $00/$00.
 
 ---
 
@@ -61,14 +63,14 @@ Tests some 65C02-specific behaviors and 65SC02 extensions.
 
 Tests the Atari Lynx hardware multiplier and divider including edge cases and timing.
 
-- **Test 1**: Basic multiplication 
-- **Test 2**: Accumulator + overflow multiplication (tests JKLM accumulator with carry)
-- **Test 3**: Signed multiplication
-- **Test 4**: $8000 multiplication bug test (known hardware bug with sign bit)
-- **Test 5**: Simple division with remainder (remainder is broken)
-- **Test 6**: Simple division with no remainder
-- **Test 7**: Division by zero (should return $FFFFFFFF)
-- **Test 8**: Timing tests (measures multiplication and division cycle counts)
+- **Test 1 – SIMPLE MUL**: Unsigned $0002×$00FF must produce EFGH=$000001FE and SPRSYS & $64=$04 (unsafe set, no overflow/carry).
+- **Test 2 – ACCUM MUL**: Multiply $0010×$0010=$00000100 and add it to JKLM=$FFFFFFF0; expect $000000F0, status $64 with overflow/last-carry/unsafe set, then $24 after clearing overflow.
+- **Test 3 – SIGNED MUL**: Expect signed $FFFD×$0005=$FFFFFFF1; then write only MATHD and multiply $0003×$0005, expecting the stale negative CD-sign latch to preserve $FFFFFFF1, with initial status $24.
+- **Test 4 – MUL $8000 BUG**: Signed $8000×$0002 must reproduce the hardware bug, yielding positive EFGH=$00010000 instead of -$10000, with SPRSYS & $64=$04.
+- **Test 5 – SIMPLE DIV**: Divide $00010000 by $000A; expect quotient ABCD=$00001999 and status $24. The remainder bytes J/K/L are checked as $00; MATHM reads $06, but its comparison is disabled.
+- **Test 6 – NO REM DIV**: Divide $0000FFFF by $00FF; expect quotient ABCD=$00000101, remainder JKLM=$00000000, and SPRSYS & $64=$04.
+- **Test 7 – DIV BY ZERO**: Divide $00001234 by $0000; expect quotient ABCD=$FFFFFFFF with divide-by-zero/last-carry/unsafe status $64.
+- **Test 8 – TIMING**: Timer 6 must measure 5–7 ticks for $0002×$FFFF and exactly 16 ticks for $12345678/$1234.
 
 ---
 
@@ -77,25 +79,22 @@ Tests the Atari Lynx hardware multiplier and divider including edge cases and ti
 
 Tests read/write functionality of Mikey and Suzy chip registers.
 
-- **Test 1**: Mikey color registers (Blue/Red at $FDB0-$FDBF, Green at $FDA0-$FDAF)
-- **Test 2**: Suzy registers at $FC00-$FC2F (write/read patterns: $00, $FF, $55, $AA)
+- **Test 1 – MIKEY COLORS**: Across all 16 offsets, Blue/Red $FDB0-$FDBF must round-trip $00/$FF/$55/$AA, increment $0F→$10, and wrap $FF→$00; 4-bit Green $FDA0-$FDAF must read $00/$0F/$05/$0A and wrap $0F→$00.
+- **Test 2 – SUZY SPR REGS**: All 48 Suzy registers at $FC00-$FC2F must round-trip $00/$FF/$55/$AA at every offset, then be reset to $00.
 
 ---
 
 ### refresh-rate/
-**LCD Configuration Test**
+**Interactive LCD Timing Configuration**
 
-Interactive test for altering display timing.
+This is a single interactive utility, not a numbered pass/fail test suite. It displays a checkerboard while allowing the LCD timing registers to be changed.
 
 - **Controls**:
-  - **A/B buttons**: Adjust Timer 0 backup value (0-255), which controls line timing and refresh rate. PBKUP is automatically calculated.
-  - **UP/DOWN buttons**: Directly adjust PBKUP value (0-255) for fine-tuning.
-  - **LEFT/RIGHT buttons**: Adjust Timer 2 backup value (0-255), which controls vertical line count.
-  - **Option 1**: Reset all values to defaults (T0=158, PBKUP=41, T2=104).
-
-- **Display**: 
-  - **First row**: T0 backup, and PBKUP
-  - **Second row**: T2 backup.
+  - **A/B buttons**: Increase/decrease Timer 0 backup (0-255). Changing Timer 0 recalculates PBKUP automatically.
+  - **Up/down buttons**: Increase/decrease PBKUP directly (0-255). This manual value remains until Timer 0 is changed again.
+  - **Left/right buttons**: Decrease/increase Timer 2 backup (0-255), changing the linked vertical period.
+  - **Option 1**: Restore T0=158, PBKUP=41, and T2=104.
+- **Display**: The first row shows the unlabeled T0 and PBKUP decimal values; the second row shows T2. The utility does not display a calculated refresh rate or a pass/fail result.
 
 ---
 
@@ -104,12 +103,12 @@ Interactive test for altering display timing.
 
 Tests the effect of MAPCTL page mode (bit 7) on CPU instruction timing.
 
-- **Test 1**: 1-byte NOP with page mode ON (200 iterations)
-- **Test 2**: 1-byte NOP with page mode OFF (200 iterations)
-- **Test 3**: 2-byte LDX #imm with page mode ON (200 iterations)
-- **Test 4**: 2-byte LDX #imm with page mode OFF (200 iterations)
-- **Test 5**: 3-byte LDA abs with page mode ON (100 iterations)
-- **Test 6**: 3-byte LDA abs with page mode OFF (100 iterations)
+- **Test 1 – NOP PM ON**: With MAPCTL bit 7 clear (page mode on), execute 200 one-byte $03 NOPs; expect Timer 6 elapsed count $35.
+- **Test 2 – NOP PM OFF**: With MAPCTL bit 7 set (page mode off), execute 200 one-byte $03 NOPs; expect Timer 6 elapsed count $41.
+- **Test 3 – LDX PM ON**: With page mode on, execute LDX #$AA 200 times; expect Timer 6 elapsed count $69.
+- **Test 4 – LDX PM OFF**: With page mode off, execute LDX #$EE 200 times; expect Timer 6 elapsed count $81.
+- **Test 5 – MEM PM ON**: With page mode on, execute LDA $2ACC 100 times; expect Timer 6 elapsed count $74 or $75.
+- **Test 6 – MEM PM OFF**: With page mode off, execute LDA $2ECC 100 times; expect Timer 6 elapsed count $81.
 
 ---
 
@@ -118,9 +117,14 @@ Tests the effect of MAPCTL page mode (bit 7) on CPU instruction timing.
 
 Tests literal sprite timing across source depths and horizontal scaling.
 
-- **Tests 1-4**: Natural-width literal sprites at 1, 2, 3, and 4 bits per pixel
-- **Tests 5-6**: Long 1-bpp and 4-bpp sources downscaled to 20 output pixels
-- **Tests 7-8**: One-pen 4-bpp sources expanded to 8 and 64 output pixels
+- **Test 1 – LIT 1B FULL**: Draw a literal 1-bpp background non-collidable sprite containing 167 pen-1 source pixels at (0,0), HSIZE=$0100 and VSIZE=$6600; the first 160 pixels are visible. With collisions disabled, expect timing $09D1–$09F1 µs.
+- **Test 2 – LIT 2B FULL**: Draw a literal 2-bpp background non-collidable sprite containing 163 pen-3 source pixels at (0,0), HSIZE=$0100 and VSIZE=$6600; 160 pixels are visible. Expect timing $0A0A–$0A2A µs.
+- **Test 3 – LIT 3B FULL**: Draw a literal 3-bpp background non-collidable sprite containing 162 pen-7 source pixels at (0,0), HSIZE=$0100 and VSIZE=$6600; 160 pixels are visible. Expect timing $0AB8–$0AD8 µs.
+- **Test 4 – LIT 4B FULL**: Draw a literal 4-bpp background non-collidable sprite containing 161 pen-1 source pixels at (0,0), HSIZE=$0100 and VSIZE=$6600; 160 pixels are visible. Expect timing $0BF9–$0C19 µs.
+- **Test 5 – LIT 1B W20**: Downscale the 167-pixel literal 1-bpp source at (0,0) with HSIZE=$0020 and VSIZE=$6600 to 20 visible pixels. Expect timing $0A0B–$0A2B µs.
+- **Test 6 – LIT 4B W20**: Downscale the 161-pixel literal 4-bpp source at (0,0) with HSIZE=$0020 and VSIZE=$6600 to 20 visible pixels. Expect timing $09DA–$09FA µs.
+- **Test 7 – EXPAND W8**: Expand one literal 4-bpp source pixel at (0,0), HSIZE=$0800 and VSIZE=$6600, to 8 pixels. Expect timing $023E–$025E µs.
+- **Test 8 – EXPAND W64**: Expand one literal 4-bpp source pixel at (0,0), HSIZE=$4000 and VSIZE=$6600, to 64 pixels. Expect timing $0504–$0524 µs.
 
 ---
 
@@ -129,18 +133,30 @@ Tests literal sprite timing across source depths and horizontal scaling.
 
 Tests timing and output at horizontal alignment and clipping boundaries.
 
-- **Tests 1-3**: 1-bpp and 4-bpp sprites aligned at X=0 and X=1
-- **Tests 4-5**: Symmetric regular clipping at the right and left screen edges
-- **Test 6**: Fully super-clipped sprite starting outside the display
-- **Test 7**: Downward vertical clipping
-- **Test 8**: Alpine Games protection geometry, where the size accumulator starts in the unflipped rightward quadrant before HFLIP makes the sprite paint left
+- **Test 1 – ALIGN 1B X0**: Draw a 23-pixel literal 1-bpp background non-collidable sprite at X=0, HSIZE=$0100 and VSIZE=$6600. With collisions disabled, expect timing $0313–$0333 µs.
+- **Test 2 – ALIGN 1B X1**: Draw the same 23-pixel literal 1-bpp sprite at X=1. Expect timing $02EC–$030C µs.
+- **Test 3 – ALIGN 4B X1**: Draw a 23-pixel literal 4-bpp background non-collidable sprite at X=1, HSIZE=$0100 and VSIZE=$6600. Expect timing $0300–$0320 µs.
+- **Test 4 – CLIP RIGHT**: Draw a 159-pixel literal 1-bpp sprite at X=159 so only its first pixel remains visible at X=159. Expect timing $01C9–$01E9 µs.
+- **Test 5 – CLIP LEFT**: Draw an HFLIP 159-pixel literal 1-bpp sprite at X=0 so only its first pixel remains visible at X=0. Expect timing $01C9–$01E9 µs.
+- **Test 6 – SUPER CLIP**: Start a 159-pixel literal 1-bpp sprite at X=160 so it is fully horizontally super-clipped. Expect timing $012F–$014F µs.
+- **Test 7 – VCLIP DOWN**: Draw a 15-pixel literal 1-bpp row at (0,101), HSIZE=$0100 and VSIZE=$0400, expanding downward to four rows; only Y=101 remains visible. Expect timing $0010–$0030 µs.
+- **Test 8 – ALPINE FLIP**: Run Alpine Games' literal 1-bpp HFLIP non-collidable protection SCB at X=163 with HSIZE=$00FF, VSIZE=$0300, and HSIZOFF=$007F; the third pen-1 pixel must map to color 5 at X=159. Expect timing $0020–$0040 µs.
 
 ---
 
 ### sprites3/
 **Suzy Sprite Operation Type Tests**
 
-Runs the same packed 4-bpp, 64-pixel source through all eight Suzy sprite operation types: background, background non-collidable, boundary shadow, boundary, normal, non-collidable, exclusive-or, and shadow. This isolates each type's video and collision behavior as well as its timing.
+Runs the same packed 4-bpp, 64-pixel sprite at (0,0), HSIZE=$0100 and VSIZE=$6600, collision number 5, collisions enabled, and depository at SCB+$17 through all eight Suzy operation types.
+
+- **Test 1 – TYPE BG**: Background operation; expect timing $0633–$0653 µs.
+- **Test 2 – TYPE BGNC**: Background non-collidable operation; expect timing $055F–$057F µs.
+- **Test 3 – TYPE BSHD**: Boundary-shadow operation; expect timing $07D1–$07F1 µs.
+- **Test 4 – TYPE BNDY**: Boundary operation; expect timing $07D2–$07F2 µs.
+- **Test 5 – TYPE NORM**: Normal operation; expect timing $07D2–$07F2 µs.
+- **Test 6 – TYPE NCOL**: Non-collidable operation; expect timing $055F–$057F µs.
+- **Test 7 – TYPE XOR**: Exclusive-or operation; expect timing $0982–$09A2 µs.
+- **Test 8 – TYPE SHDW**: Shadow operation; expect timing $07D1–$07F1 µs.
 
 ---
 
@@ -149,11 +165,30 @@ Runs the same packed 4-bpp, 64-pixel source through all eight Suzy sprite operat
 
 Tests representative packed-data and sprite-list workloads.
 
-- **Tests 1-2**: RLE packets producing 32 and 64 output pixels
-- **Test 3**: Literal packets producing 64 output pixels
-- **Tests 4-5**: Special pen E and collidable XOR pen F behavior
-- **Tests 6-7**: Lists containing two and four linked SCBs
-- **Test 8**: One-pen expansion to 24 pixels while display DMA is active
+- **Test 1 – PACK RLE W32**: Draw a packed 4-bpp background non-collidable sprite with two 16-pixel RLE packets, producing 32 pixels at (0,0), HSIZE=$0100 and VSIZE=$6600. With collisions disabled, expect timing $0392–$03B2 µs.
+- **Test 2 – PACK RLE W64**: Draw four 16-pixel RLE packets, producing 64 pixels. Expect timing $055F–$057F µs.
+- **Test 3 – PACK LIT W64**: Draw four 16-pixel literal packets in packed mode, producing 64 pixels. Expect timing $05D3–$05F3 µs.
+- **Test 4 – PACK PEN E**: Draw four 16-pixel pen-E RLE packets as a background-operation sprite with collision number 5 and collisions/depository enabled. Expect timing $0632–$0652 µs.
+- **Test 5 – PACK XOR F**: Draw four 16-pixel collidable pen-F RLE packets as an XOR sprite with collision number 5 and collisions/depository enabled. Expect timing $0982–$09A2 µs.
+- **Test 6 – LINK 2 SCB**: Draw two linked packed 4-bpp, 64-pixel background non-collidable SCBs at Y=0 and Y=1, each HSIZE/VSIZE=$0100. Expect timing $0027–$0047 µs.
+- **Test 7 – LINK 4 SCB**: Draw four equivalent linked SCBs at Y=0–3. Expect timing $004C–$006C µs.
+- **Test 8 – DMA EXP W24**: Expand one literal 4-bpp source pixel at (0,0), HSIZE=$1800 and VSIZE=$6600, to 24 pixels while display DMA is enabled. Expect timing $0332–$0352 µs.
+
+---
+
+### sprites5/
+**Suzy Zoom, Stretch, and Tilt Tests**
+
+Transforms literal 4-bpp background non-collidable sprites with collisions disabled and the depository at SCB+$1B.
+
+- **Test 1 – ZOOM OUT .5**: Draw a patterned 17×16 source at (76,47), HSIZE=VSIZE=$0080, producing an 8×8 half-scale result. Expect timing $0048–$0068 µs.
+- **Test 2 – ZOOM 16X8**: Expand one source pixel at (72,47), HSIZE=$1000 and VSIZE=$0800, into a 16×8 rectangle. Expect timing $003B–$005B µs.
+- **Test 3 – STRETCH +.5**: Draw a one-pixel source at (68,47), initial HSIZE/VSIZE=$0800, with horizontal stretch +$0080 per row. Expect timing $0039–$0059 µs.
+- **Test 4 – STRETCH -1**: Draw a one-pixel source at (68,47), initial HSIZE=$0F00 and VSIZE=$0800, with horizontal stretch -$0100 per row. Expect timing $003B–$005B µs.
+- **Test 5 – TILT +.5**: Draw a one-pixel source at (72,47), HSIZE/VSIZE=$0800, zero stretch, and tilt +$0080 per row. Expect timing $0043–$0063 µs.
+- **Test 6 – TILT +1**: Use the same source and size with tilt +$0100 per row. Expect timing $0042–$0062 µs.
+- **Test 7 – TILT -1**: Use the same source and size with tilt -$0100 per row. Expect timing $0042–$0062 µs.
+- **Test 8 – BOTH +1**: Draw a one-pixel source at (68,47), initial HSIZE/VSIZE=$0800, with stretch +$0100 and tilt +$0100 per row. Expect timing $0044–$0064 µs.
 
 ---
 
@@ -162,29 +197,27 @@ Tests representative packed-data and sprite-list workloads.
 
 Tests the Atari Lynx hardware timers including interrupt generation and linking.
 
-- **Test 1**: CTLB register read/write and timer decrement
-- **Test 2**: One-shot timer without interrupts (polls DONE bit)
-- **Test 3**: One-shot timer with interrupt generation (counts IRQs)
-- **Test 4**: RESET_DONE functionality (level-triggered interrupt behavior)
-- **Test 5**: Pre-set DONE bit behavior (prevents timer operation)
-- **Test 6**: Timer linking (Timer 5 linked to Timer 3)
-- **Test 7**: Reload mode DONE bit behavior
+- **Test 1 – CTLB RD/WR**: With Timer 3 CNT=$80, write CTLB=$0A and expect low CTLB=$08 and CNT=$7F; clear CTLB and expect $00.
+- **Test 2 – ONESHOT**: Run Timer 3 one-shot at prescaler 6 with BKUP/CNT=$F0 and interrupts disabled; poll DONE and expect CTLB=$08 with INTSET=$00.
+- **Test 3 – ONESHOT+IRQ**: Run Timer 3 one-shot at prescaler 1 with BKUP/CNT=$05 and interrupts enabled; expect exactly one IRQ, DONE=$08, and CNT=$00.
+- **Test 4 – RESET-DONE**: Run Timer 3 one-shot at prescaler 2 with interrupts and RESET_DONE enabled; clear repeated IRQs, remove RESET_DONE after four IRQs, and expect 4–5 total IRQs, DONE=$08, explicit CTLB clearing to $00, and timeout remainder $35–$37.
+- **Test 5 – TDONE BIT**: Pre-set Timer 3 DONE with BKUP/CNT=$05, interrupts enabled, and prescaler 2; expect no IRQ while DONE is set and one IRQ after clearing DONE.
+- **Test 6 – ONESHOT+LINK**: Timer 3 reloads from $10 at prescaler 2 and clocks linked Timer 5 with BKUP/CNT=$00, RESET_DONE, and interrupts enabled; expect 13 Timer 5 IRQs during $C0 poll iterations.
+- **Test 7 – TDONE RELOAD**: Run Timer 3 reload mode at prescaler 4 with BKUP/CNT=$FF and interrupts enabled; on the first reload IRQ, expect DONE=$08.
 
 ---
 
 ### uart/
 **UART Transmission Timing Tests**
 
-Tests UART transmission timing at various baud rates using Timer6 to measure bit timings.
+Tests UART transmission timing in source order at 9600, 2400, 1200, and 62500 bps using Timer 4 backup values 12, 51, 103, and 1; Timer 6 measures 64 µs ticks.
 
-- **Test 1**: Idle → measure until TXEMPTY (11-bit frame transmission time)
-- **Test 2**: Idle → measure until TXREADY (holding register ready time)
-- **Test 3**: Streaming → measure until TXEMPTY (after warm-up with 8 bytes)
-- **Test 4**: Streaming → measure until TXREADY (after warm-up with 8 bytes)
-- **Test 5**: Streaming → measure until INT4 (TXRDY IRQ timing)
-- **Test 6**: TXBRK → measure until TXREADY when releasing break
-
-Tests at 4 baud rates: 1200, 2400, 9600 and 62500 bps.
+- **Test 1 – TXEMPTY IDLE**: From an idle SERDAT=$A5 write, measure until TXEMPTY after the 11-bit frame; expect Timer 6 ticks $14–$15/$53–$54/$A9–$AA/$03–$04.
+- **Test 2 – TXRDY IDLE**: From an idle SERDAT=$A5 write, measure until TXRDY indicates that the holding register is ready; expect $02–$04/$0D–$0E/$1A–$1B/$01–$02.
+- **Test 3 – TXEMPTY FULL**: After eight TXRDY-paced warm-up bytes, time a ninth SERDAT=$A5 write until TXEMPTY; expect $24–$25/$8F–$90/$1E–$1F/$06–$07.
+- **Test 4 – TXRDY FULL**: After eight TXRDY-paced warm-up bytes, time a ninth write until TXRDY; expect $12–$13/$48–$49/$8F–$90/$03–$04.
+- **Test 5 – TIME TO IRQ**: With TXINTEN set, after eight warm-up bytes clear INT4 after the ninth write and time until the next TXRDY interrupt; expect $12–$13/$48/$8F–$90/$03–$04.
+- **Test 6 – TXBRK→TXRDY**: Hold SERDAT=$A5 while TXBRK is set, release TXBRK, and time until TXRDY; expect $02–$04/$46–$47/$8F–$90/$03–$04.
 
 ---
 
@@ -193,11 +226,11 @@ Tests at 4 baud rates: 1200, 2400, 9600 and 62500 bps.
 
 Tests UART parity, error handling, and edge cases.
 
-- **Test 1**: RX overrun detection (2 vs 3 consecutive bytes without reading)
-- **Test 2**: Parity modes (PAREN=1 even/odd, PAREN=0 with 9th bit)
-- **Test 3**: Dynamic parity changes between frames and during BREAK
-- **Test 4**: SERDAT holding register overflow (3 consecutive writes)
-- **Test 5**: Interrupt pending behavior (level-triggered + latched)
+- **Test 1 – OVERRUN ERR**: At 9600-bps internal loopback, send two bytes without reading and expect RXRDY=1 with OVRERR=0; repeat with three bytes and expect RXRDY=1 with OVRERR=1.
+- **Test 2 – PARITY**: At 9600-bps loopback, verify PAREN=1 even/odd parity using $55 and $01 with the correct PARBIT and no PARERR; with PAREN=0, verify that the ninth bit equals PAREVEN for 0 and 1 and validate mismatch PARERR behavior.
+- **Test 3 – SERCTL CHANGE**: At 9600-bps loopback, verify PAREVEN 1→0 and PAREN 1→0 changes between frames, then repeat both changes while TXBRK holds a byte; the released frame must use the new setting, with no premature RXRDY, correct PARBIT, and no spurious PARERR.
+- **Test 4 – HOLDING FULL**: At 9600-bps loopback, transmit $11, then write $22 and $33 while the holding register is occupied; $33 must replace $22, exactly $11/$33 must be received, RXRDY must clear after draining, and TXEMPTY/TXRDY must finish set.
+- **Test 5 – IRQ LEVEL**: At 9600 bps with TXINTEN enabled and idle TXRDY=1, verify that INT4 immediately relatches after INTRST, remains pending when transmission starts and ends and SERDAT is read, and clears through INTRST while TXRDY=0.
 
 ---
 
@@ -210,6 +243,6 @@ cd <test-directory>
 make
 ```
 
-The build system uses the [cc65](https://github.com/cc65/cc65) toolchain for 65C02 assembly and produces `.lnx` executable files for the Atari Lynx.
+The build system uses the [cc65](https://github.com/cc65/cc65) C and 65C02 assembly toolchain and produces `.lnx` executable files for the Atari Lynx.
 
-Makefiles need `$CC65_HOME` var already defined in your environment.
+Set `CC65_HOME` to the cc65 installation or source-tree root and ensure `$CC65_HOME/bin` is present in `PATH`.

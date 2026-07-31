@@ -22,6 +22,7 @@ TESTS=(
     "sprites2"
     "sprites3"
     "sprites4"
+    "sprites5"
     "timers"
     "uart"
     "uart2"

@@ -4,6 +4,7 @@
 .include "../shared/sprites.inc"
 
 TEST_COUNT = 8
+HAS_PREPARE_DRAW = 1
 
 .segment "RODATA"
 
@@ -27,6 +28,11 @@ Literal1Long:
     .endrepeat
     .byte 0, 0
 
+; Exact Alpine Games protection source. With HSIZOFF=$007F, the third pen-1
+; reaches visible x=159.
+Literal1Alpine:
+    .byte 2, $A8, 0
+
 ; Fifteen 1-bpp pens in one source row, repeated vertically four times.
 Literal1Vertical:
     .byte 4, $FF, $FF, 0, 0
@@ -41,9 +47,19 @@ DEFINE_SCB ScbClipLeft, BPP_1 | TYPE_BACKNONCOLL | HFLIP, REHV | LITERAL, 0, 0, 
 DEFINE_SCB ScbSuperClip, BPP_1 | TYPE_BACKNONCOLL, REHV | LITERAL, 0, 0, Literal1Long, 160, 0, $0100, $6600
 DEFINE_SCB ScbVerticalDown, BPP_1 | TYPE_BACKNONCOLL, REHV | LITERAL, 0, 0, Literal1Vertical, 0, 101, $0100, $0400
 
-; Alpine Games protection geometry: start right, then HFLIP paints left.
-; The size accumulator must be seeded from the unflipped start quadrant.
-DEFINE_SCB ScbAlpine, BPP_1 | TYPE_NONCOLL | HFLIP, REHV | LITERAL, 0, 0, Literal1Long, 163, 0, $00FF, $0100
+; Alpine Games SCB $59F9: SPRCTL0=$25, SPRCTL1=$90, pen 1 maps to color 5.
+ScbAlpine:
+    .byte BPP_1 | TYPE_NONCOLL | HFLIP
+    .byte REHV | LITERAL
+    .byte 0
+    .word 0
+    .word Literal1Alpine
+    .word 163
+    .word 0
+    .word $00FF
+    .word $0300
+    .byte $05, $23, $45, $67, $89, $AB, $CD, $EF
+    .byte 0
 
 .segment "RODATA"
 
@@ -70,6 +86,17 @@ TestDescriptors:
     ; Alpine protection runs with the standard half-pixel size offset.
     lda #$7F
     sta HSIZOFFL
+@done:
+    rts
+.endproc
+
+.proc PrepareDraw
+    lda test_index
+    cmp #7
+    bne @done
+
+    ; The game clears this byte before checking its low nibble for color 5.
+    stz VIDEO_BASE + $4F
 @done:
     rts
 .endproc

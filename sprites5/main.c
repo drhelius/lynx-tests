@@ -18,38 +18,38 @@ extern volatile uint8_t g_results[RESULT_COUNT];
 
 static const expected_range16_t k_expected_timings[TEST_COUNT] =
 {
-    EXPECT_RANGE16(0x0392, 0x03B2),
-    EXPECT_RANGE16(0x055F, 0x057F),
-    EXPECT_RANGE16(0x05D3, 0x05F3),
-    EXPECT_RANGE16(0x0632, 0x0652),
-    EXPECT_RANGE16(0x0982, 0x09A2),
-    EXPECT_RANGE16(0x0027, 0x0047),
-    EXPECT_RANGE16(0x004C, 0x006C),
-    EXPECT_RANGE16(0x0332, 0x0352)
+    EXPECT_RANGE16(0x0048, 0x0068),
+    EXPECT_RANGE16(0x003B, 0x005B),
+    EXPECT_RANGE16(0x0039, 0x0059),
+    EXPECT_RANGE16(0x003B, 0x005B),
+    EXPECT_RANGE16(0x0043, 0x0063),
+    EXPECT_RANGE16(0x0042, 0x0062),
+    EXPECT_RANGE16(0x0042, 0x0062),
+    EXPECT_RANGE16(0x0044, 0x0064)
 };
 
 static const expected_result_t k_expected_crcs[TEST_COUNT * 2] =
 {
-    EXPECT(0x4B), EXPECT(0x4B),
-    EXPECT(0xF9), EXPECT(0x4B),
-    EXPECT(0xF9), EXPECT(0x4B),
-    EXPECT(0x1E), EXPECT(0x4B),
-    EXPECT(0xCF), EXPECT(0x8B),
+    EXPECT(0x50), EXPECT(0x4B),
+    EXPECT(0x99), EXPECT(0x4B),
+    EXPECT(0x69), EXPECT(0x4B),
     EXPECT(0x36), EXPECT(0x4B),
-    EXPECT(0xD8), EXPECT(0x4B),
-    EXPECT(0xBB), EXPECT(0x4B)
+    EXPECT(0x21), EXPECT(0x4B),
+    EXPECT(0x4D), EXPECT(0x4B),
+    EXPECT(0x14), EXPECT(0x4B),
+    EXPECT(0x55), EXPECT(0x4B)
 };
 
 static const char* k_test_names[TEST_COUNT] =
 {
-    "PACK RLE W32",
-    "PACK RLE W64",
-    "PACK LIT W64",
-    "PACK PEN E",
-    "PACK XOR F",
-    "LINK 2 SCB",
-    "LINK 4 SCB",
-    "DMA EXP W24"
+    "ZOOM OUT .5",
+    "ZOOM 16X8",
+    "STRETCH +.5",
+    "STRETCH -1",
+    "TILT +.5",
+    "TILT +1",
+    "TILT -1",
+    "BOTH +1"
 };
 
 void main(void)

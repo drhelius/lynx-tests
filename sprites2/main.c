@@ -37,7 +37,7 @@ static const expected_result_t k_expected_crcs[TEST_COUNT * 2] =
     EXPECT(0x17), EXPECT(0x4B),
     EXPECT(0x28), EXPECT(0x4B),
     EXPECT(0xC0), EXPECT(0x4B),
-    EXPECT(0x8F), EXPECT(0x4B)
+    EXPECT(0x4E), EXPECT(0x4B)
 };
 
 static const char* k_test_names[TEST_COUNT] =
