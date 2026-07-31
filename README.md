@@ -113,6 +113,50 @@ Tests the effect of MAPCTL page mode (bit 7) on CPU instruction timing.
 
 ---
 
+### sprites1/
+**Suzy Literal Source and Scaling Timing Tests**
+
+Tests literal sprite timing across source depths and horizontal scaling.
+
+- **Tests 1-4**: Natural-width literal sprites at 1, 2, 3, and 4 bits per pixel
+- **Tests 5-6**: Long 1-bpp and 4-bpp sources downscaled to 20 output pixels
+- **Tests 7-8**: One-pen 4-bpp sources expanded to 8 and 64 output pixels
+
+---
+
+### sprites2/
+**Suzy Alignment, Clipping, and Alpine Protection Tests**
+
+Tests timing and output at horizontal alignment and clipping boundaries.
+
+- **Tests 1-3**: 1-bpp and 4-bpp sprites aligned at X=0 and X=1
+- **Tests 4-5**: Symmetric regular clipping at the right and left screen edges
+- **Test 6**: Fully super-clipped sprite starting outside the display
+- **Test 7**: Downward vertical clipping
+- **Test 8**: Alpine Games protection geometry, where the size accumulator starts in the unflipped rightward quadrant before HFLIP makes the sprite paint left
+
+---
+
+### sprites3/
+**Suzy Sprite Operation Type Tests**
+
+Runs the same packed 4-bpp, 64-pixel source through all eight Suzy sprite operation types: background, background non-collidable, boundary shadow, boundary, normal, non-collidable, exclusive-or, and shadow. This isolates each type's video and collision behavior as well as its timing.
+
+---
+
+### sprites4/
+**Suzy Packed, Linked, and Display-DMA Timing Tests**
+
+Tests representative packed-data and sprite-list workloads.
+
+- **Tests 1-2**: RLE packets producing 32 and 64 output pixels
+- **Test 3**: Literal packets producing 64 output pixels
+- **Tests 4-5**: Special pen E and collidable XOR pen F behavior
+- **Tests 6-7**: Lists containing two and four linked SCBs
+- **Test 8**: One-pen expansion to 24 pixels while display DMA is active
+
+---
+
 ### timers/
 **Hardware Timer Tests**
 
