@@ -117,14 +117,14 @@ Tests the effect of MAPCTL page mode (bit 7) on CPU instruction timing.
 
 Tests literal sprite timing across source depths and horizontal scaling.
 
-- **Test 1 – LIT 1B FULL**: Draw a literal 1-bpp background non-collidable sprite containing 167 pen-1 source pixels at (0,0), HSIZE=$0100 and VSIZE=$6600; the first 160 pixels are visible. With collisions disabled, expect timing $09D1–$09F1 µs.
-- **Test 2 – LIT 2B FULL**: Draw a literal 2-bpp background non-collidable sprite containing 163 pen-3 source pixels at (0,0), HSIZE=$0100 and VSIZE=$6600; 160 pixels are visible. Expect timing $0A0A–$0A2A µs.
-- **Test 3 – LIT 3B FULL**: Draw a literal 3-bpp background non-collidable sprite containing 162 pen-7 source pixels at (0,0), HSIZE=$0100 and VSIZE=$6600; 160 pixels are visible. Expect timing $0AB8–$0AD8 µs.
-- **Test 4 – LIT 4B FULL**: Draw a literal 4-bpp background non-collidable sprite containing 161 pen-1 source pixels at (0,0), HSIZE=$0100 and VSIZE=$6600; 160 pixels are visible. Expect timing $0BF9–$0C19 µs.
-- **Test 5 – LIT 1B W20**: Downscale the 167-pixel literal 1-bpp source at (0,0) with HSIZE=$0020 and VSIZE=$6600 to 20 visible pixels. Expect timing $0A0B–$0A2B µs.
-- **Test 6 – LIT 4B W20**: Downscale the 161-pixel literal 4-bpp source at (0,0) with HSIZE=$0020 and VSIZE=$6600 to 20 visible pixels. Expect timing $09DA–$09FA µs.
-- **Test 7 – EXPAND W8**: Expand one literal 4-bpp source pixel at (0,0), HSIZE=$0800 and VSIZE=$6600, to 8 pixels. Expect timing $023E–$025E µs.
-- **Test 8 – EXPAND W64**: Expand one literal 4-bpp source pixel at (0,0), HSIZE=$4000 and VSIZE=$6600, to 64 pixels. Expect timing $0504–$0524 µs.
+- **Test 1 – LIT 1B FULL**: Draw a literal 1-bpp background non-collidable sprite containing 167 pen-1 source pixels at (0,0), HSIZE=$0100 and VSIZE=$6600; the first 160 pixels are visible. Collisions are disabled.
+- **Test 2 – LIT 2B FULL**: Draw a literal 2-bpp background non-collidable sprite containing 163 pen-3 source pixels at (0,0), HSIZE=$0100 and VSIZE=$6600; 160 pixels are visible.
+- **Test 3 – LIT 3B FULL**: Draw a literal 3-bpp background non-collidable sprite containing 162 pen-7 source pixels at (0,0), HSIZE=$0100 and VSIZE=$6600; 160 pixels are visible.
+- **Test 4 – LIT 4B FULL**: Draw a literal 4-bpp background non-collidable sprite containing 161 pen-1 source pixels at (0,0), HSIZE=$0100 and VSIZE=$6600; 160 pixels are visible.
+- **Test 5 – LIT 1B W20**: Downscale the 167-pixel literal 1-bpp source at (0,0) with HSIZE=$0020 and VSIZE=$6600 to 20 visible pixels.
+- **Test 6 – LIT 4B W20**: Downscale the 161-pixel literal 4-bpp source at (0,0) with HSIZE=$0020 and VSIZE=$6600 to 20 visible pixels.
+- **Test 7 – EXPAND W8**: Expand one literal 4-bpp source pixel at (0,0), HSIZE=$0800 and VSIZE=$6600, to 8 pixels.
+- **Test 8 – EXPAND W64**: Expand one literal 4-bpp source pixel at (0,0), HSIZE=$4000 and VSIZE=$6600, to 64 pixels.
 
 ---
 
@@ -133,14 +133,14 @@ Tests literal sprite timing across source depths and horizontal scaling.
 
 Tests timing and output at horizontal alignment and clipping boundaries.
 
-- **Test 1 – ALIGN 1B X0**: Draw a 23-pixel literal 1-bpp background non-collidable sprite at X=0, HSIZE=$0100 and VSIZE=$6600. With collisions disabled, expect timing $0313–$0333 µs.
-- **Test 2 – ALIGN 1B X1**: Draw the same 23-pixel literal 1-bpp sprite at X=1. Expect timing $02EC–$030C µs.
-- **Test 3 – ALIGN 4B X1**: Draw a 23-pixel literal 4-bpp background non-collidable sprite at X=1, HSIZE=$0100 and VSIZE=$6600. Expect timing $0300–$0320 µs.
-- **Test 4 – CLIP RIGHT**: Draw a 159-pixel literal 1-bpp sprite at X=159 so only its first pixel remains visible at X=159. Expect timing $01C9–$01E9 µs.
-- **Test 5 – CLIP LEFT**: Draw an HFLIP 159-pixel literal 1-bpp sprite at X=0 so only its first pixel remains visible at X=0. Expect timing $01C9–$01E9 µs.
-- **Test 6 – SUPER CLIP**: Start a 159-pixel literal 1-bpp sprite at X=160 so it is fully horizontally super-clipped. Expect timing $012F–$014F µs.
-- **Test 7 – VCLIP DOWN**: Draw a 15-pixel literal 1-bpp row at (0,101), HSIZE=$0100 and VSIZE=$0400, expanding downward to four rows; only Y=101 remains visible. Expect timing $0010–$0030 µs.
-- **Test 8 – ALPINE FLIP**: Run Alpine Games' literal 1-bpp HFLIP non-collidable protection SCB at X=163 with HSIZE=$00FF, VSIZE=$0300, and HSIZOFF=$007F; the third pen-1 pixel must map to color 5 at X=159. Expect timing $0020–$0040 µs.
+- **Test 1 – ALIGN 1B X0**: Draw a 23-pixel literal 1-bpp background non-collidable sprite at X=0, HSIZE=$0100 and VSIZE=$6600. Collisions are disabled.
+- **Test 2 – ALIGN 1B X1**: Draw the same 23-pixel literal 1-bpp sprite at X=1.
+- **Test 3 – ALIGN 4B X1**: Draw a 23-pixel literal 4-bpp background non-collidable sprite at X=1, HSIZE=$0100 and VSIZE=$6600.
+- **Test 4 – CLIP RIGHT**: Draw a 159-pixel literal 1-bpp sprite at X=159 so only its first pixel remains visible at X=159.
+- **Test 5 – CLIP LEFT**: Draw an HFLIP 159-pixel literal 1-bpp sprite at X=0 so only its first pixel remains visible at X=0.
+- **Test 6 – SUPER CLIP**: Start a 159-pixel literal 1-bpp sprite at X=160 so it is fully horizontally super-clipped.
+- **Test 7 – VCLIP DOWN**: Draw a 15-pixel literal 1-bpp row at (0,101), HSIZE=$0100 and VSIZE=$0400, expanding downward to four rows; only Y=101 remains visible.
+- **Test 8 – ALPINE FLIP**: Run Alpine Games' literal 1-bpp HFLIP non-collidable protection SCB at X=163 with HSIZE=$00FF, VSIZE=$0300, and HSIZOFF=$007F; the third pen-1 pixel must map to color 5 at X=159.
 
 ---
 
@@ -149,14 +149,14 @@ Tests timing and output at horizontal alignment and clipping boundaries.
 
 Runs the same packed 4-bpp, 64-pixel sprite at (0,0), HSIZE=$0100 and VSIZE=$6600, collision number 5, collisions enabled, and depository at SCB+$17 through all eight Suzy operation types.
 
-- **Test 1 – TYPE BG**: Background operation; expect timing $0633–$0653 µs.
-- **Test 2 – TYPE BGNC**: Background non-collidable operation; expect timing $055F–$057F µs.
-- **Test 3 – TYPE BSHD**: Boundary-shadow operation; expect timing $07D1–$07F1 µs.
-- **Test 4 – TYPE BNDY**: Boundary operation; expect timing $07D2–$07F2 µs.
-- **Test 5 – TYPE NORM**: Normal operation; expect timing $07D2–$07F2 µs.
-- **Test 6 – TYPE NCOL**: Non-collidable operation; expect timing $055F–$057F µs.
-- **Test 7 – TYPE XOR**: Exclusive-or operation; expect timing $0982–$09A2 µs.
-- **Test 8 – TYPE SHDW**: Shadow operation; expect timing $07D1–$07F1 µs.
+- **Test 1 – TYPE BG**: Background operation.
+- **Test 2 – TYPE BGNC**: Background non-collidable operation.
+- **Test 3 – TYPE BSHD**: Boundary-shadow operation.
+- **Test 4 – TYPE BNDY**: Boundary operation.
+- **Test 5 – TYPE NORM**: Normal operation.
+- **Test 6 – TYPE NCOL**: Non-collidable operation.
+- **Test 7 – TYPE XOR**: Exclusive-or operation.
+- **Test 8 – TYPE SHDW**: Shadow operation.
 
 ---
 
@@ -165,14 +165,14 @@ Runs the same packed 4-bpp, 64-pixel sprite at (0,0), HSIZE=$0100 and VSIZE=$660
 
 Tests representative packed-data and sprite-list workloads.
 
-- **Test 1 – PACK RLE W32**: Draw a packed 4-bpp background non-collidable sprite with two 16-pixel RLE packets, producing 32 pixels at (0,0), HSIZE=$0100 and VSIZE=$6600. With collisions disabled, expect timing $0392–$03B2 µs.
-- **Test 2 – PACK RLE W64**: Draw four 16-pixel RLE packets, producing 64 pixels. Expect timing $055F–$057F µs.
-- **Test 3 – PACK LIT W64**: Draw four 16-pixel literal packets in packed mode, producing 64 pixels. Expect timing $05D3–$05F3 µs.
-- **Test 4 – PACK PEN E**: Draw four 16-pixel pen-E RLE packets as a background-operation sprite with collision number 5 and collisions/depository enabled. Expect timing $0632–$0652 µs.
-- **Test 5 – PACK XOR F**: Draw four 16-pixel collidable pen-F RLE packets as an XOR sprite with collision number 5 and collisions/depository enabled. Expect timing $0982–$09A2 µs.
-- **Test 6 – LINK 2 SCB**: Draw two linked packed 4-bpp, 64-pixel background non-collidable SCBs at Y=0 and Y=1, each HSIZE/VSIZE=$0100. Expect timing $0027–$0047 µs.
-- **Test 7 – LINK 4 SCB**: Draw four equivalent linked SCBs at Y=0–3. Expect timing $004C–$006C µs.
-- **Test 8 – DMA EXP W24**: Expand one literal 4-bpp source pixel at (0,0), HSIZE=$1800 and VSIZE=$6600, to 24 pixels while display DMA is enabled. Expect timing $0332–$0352 µs.
+- **Test 1 – PACK RLE W32**: Draw a packed 4-bpp background non-collidable sprite with two 16-pixel RLE packets, producing 32 pixels at (0,0), HSIZE=$0100 and VSIZE=$6600. Collisions are disabled.
+- **Test 2 – PACK RLE W64**: Draw four 16-pixel RLE packets, producing 64 pixels.
+- **Test 3 – PACK LIT W64**: Draw four 16-pixel literal packets in packed mode, producing 64 pixels.
+- **Test 4 – PACK PEN E**: Draw four 16-pixel pen-E RLE packets as a background-operation sprite with collision number 5 and collisions/depository enabled.
+- **Test 5 – PACK XOR F**: Draw four 16-pixel collidable pen-F RLE packets as an XOR sprite with collision number 5 and collisions/depository enabled.
+- **Test 6 – LINK 2 SCB**: Draw two linked packed 4-bpp, 64-pixel background non-collidable SCBs at Y=0 and Y=1, each HSIZE/VSIZE=$0100.
+- **Test 7 – LINK 4 SCB**: Draw four equivalent linked SCBs at Y=0–3.
+- **Test 8 – DMA EXP W24**: Expand one literal 4-bpp source pixel at (0,0), HSIZE=$1800 and VSIZE=$6600, to 24 pixels while display DMA is enabled.
 
 ---
 
@@ -181,14 +181,14 @@ Tests representative packed-data and sprite-list workloads.
 
 Transforms literal 4-bpp background non-collidable sprites with collisions disabled and the depository at SCB+$1B.
 
-- **Test 1 – ZOOM OUT .5**: Draw a patterned 17×16 source at (76,47), HSIZE=VSIZE=$0080, producing an 8×8 half-scale result. Expect timing $0048–$0068 µs.
-- **Test 2 – ZOOM 16X8**: Expand one source pixel at (72,47), HSIZE=$1000 and VSIZE=$0800, into a 16×8 rectangle. Expect timing $003B–$005B µs.
-- **Test 3 – STRETCH +.5**: Draw a one-pixel source at (68,47), initial HSIZE/VSIZE=$0800, with horizontal stretch +$0080 per row. Expect timing $0039–$0059 µs.
-- **Test 4 – STRETCH -1**: Draw a one-pixel source at (68,47), initial HSIZE=$0F00 and VSIZE=$0800, with horizontal stretch -$0100 per row. Expect timing $003B–$005B µs.
-- **Test 5 – TILT +.5**: Draw a one-pixel source at (72,47), HSIZE/VSIZE=$0800, zero stretch, and tilt +$0080 per row. Expect timing $0043–$0063 µs.
-- **Test 6 – TILT +1**: Use the same source and size with tilt +$0100 per row. Expect timing $0042–$0062 µs.
-- **Test 7 – TILT -1**: Use the same source and size with tilt -$0100 per row. Expect timing $0042–$0062 µs.
-- **Test 8 – BOTH +1**: Draw a one-pixel source at (68,47), initial HSIZE/VSIZE=$0800, with stretch +$0100 and tilt +$0100 per row. Expect timing $0044–$0064 µs.
+- **Test 1 – ZOOM OUT .5**: Draw a patterned 17×16 source at (76,47), HSIZE=VSIZE=$0080, producing an 8×8 half-scale result.
+- **Test 2 – ZOOM 16X8**: Expand one source pixel at (72,47), HSIZE=$1000 and VSIZE=$0800, into a 16×8 rectangle.
+- **Test 3 – STRETCH +.5**: Draw a one-pixel source at (68,47), initial HSIZE/VSIZE=$0800, with horizontal stretch +$0080 per row.
+- **Test 4 – STRETCH -1**: Draw a one-pixel source at (68,47), initial HSIZE=$0F00 and VSIZE=$0800, with horizontal stretch -$0100 per row.
+- **Test 5 – TILT +.5**: Draw a one-pixel source at (72,47), HSIZE/VSIZE=$0800, zero stretch, and tilt +$0080 per row.
+- **Test 6 – TILT +1**: Use the same source and size with tilt +$0100 per row.
+- **Test 7 – TILT -1**: Use the same source and size with tilt -$0100 per row.
+- **Test 8 – BOTH +1**: Draw a one-pixel source at (68,47), initial HSIZE/VSIZE=$0800, with stretch +$0100 and tilt +$0100 per row.
 
 ---
 
