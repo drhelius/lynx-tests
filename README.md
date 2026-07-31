@@ -147,16 +147,16 @@ Tests timing and output at horizontal alignment and clipping boundaries.
 ### sprites3/
 **Suzy Sprite Operation Type Tests**
 
-Runs the same packed 4-bpp, 64-pixel sprite at (0,0), HSIZE=$0100 and VSIZE=$6600, collision number 5, collisions enabled, and depository at SCB+$17 through all eight Suzy operation types.
+Runs the same packed 4-bpp, 64-pixel sprite at (0,0), HSIZE=$0100 and VSIZE=$6600, collision number 5, collisions enabled, and depository at SCB+$17 through all eight Suzy operation types. Before every draw, the runner fills the video buffer with $A5 and the collision buffer with $5A. The sprite contains four 16-pixel runs using pens 0, E, F, and 1, so the CRCs verify transparent pixels, shadow pixels, boundary pixels, ordinary pixels, modified data, and preserved data.
 
-- **Test 1 – TYPE BG**: Background operation.
-- **Test 2 – TYPE BGNC**: Background non-collidable operation.
-- **Test 3 – TYPE BSHD**: Boundary-shadow operation.
-- **Test 4 – TYPE BNDY**: Boundary operation.
-- **Test 5 – TYPE NORM**: Normal operation.
-- **Test 6 – TYPE NCOL**: Non-collidable operation.
-- **Test 7 – TYPE XOR**: Exclusive-or operation.
-- **Test 8 – TYPE SHDW**: Shadow operation.
+- **Test 1 – TYPE BG**: All pens overwrite video; pens 0, F, and 1 replace collision cells while pen E preserves them.
+- **Test 2 – TYPE BGNC**: All pens overwrite video and the complete collision buffer remains unchanged.
+- **Test 3 – TYPE BSHD**: Pens 0/F are transparent, pen E is opaque but non-collidable, and pens F/1 update collisions.
+- **Test 4 – TYPE BNDY**: Pens 0/F are transparent while pens E/F/1 update collisions.
+- **Test 5 – TYPE NORM**: Pen 0 is transparent and pens E/F/1 overwrite video and update collisions.
+- **Test 6 – TYPE NCOL**: Pen 0 is transparent, pens E/F/1 overwrite video, and collisions remain unchanged.
+- **Test 7 – TYPE XOR**: Pens E/F/1 XOR the existing video, pen E preserves collision cells, and pens F/1 update collisions.
+- **Test 8 – TYPE SHDW**: Pen 0 is transparent, pen E is opaque but non-collidable, and pens F/1 overwrite video and update collisions.
 
 ---
 
