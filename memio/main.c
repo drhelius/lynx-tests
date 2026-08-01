@@ -5,7 +5,7 @@
 #include "util.h"
 
 #define RESULT_COUNT 18
-#define TEST_COUNT 2
+#define TEST_COUNT 3
 
 extern void run_tests(void);
 static void init(void);
@@ -23,13 +23,14 @@ static const expected_result_t k_expected_results[RESULT_COUNT] =
     EXPECT(0x00), EXPECT(0x00), EXPECT(0x00), EXPECT(0x00),
 };
 
-static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 4 };
-static const uint8_t k_test_counts[TEST_COUNT]  = { 4, 4 };
+static const uint8_t k_test_offsets[TEST_COUNT] = { 0, 4, 8 };
+static const uint8_t k_test_counts[TEST_COUNT]  = { 4, 4, 5 };
 
 static const char* k_test_names[TEST_COUNT] =
 {
     "MIKEY COLORS",
     "SUZY SPR REGS",
+    "SUZY MIRRORS",
 };
 
 void main(void)

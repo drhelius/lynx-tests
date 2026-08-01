@@ -14,7 +14,8 @@
 
 ;-------------------------------------------------------------------
 .segment "ZEROPAGE"
-    stage: .res 1
+    stage:          .res 1
+    expected_value: .res 1
 
 ;-------------------------------------------------------------------
 .segment "CODE"
@@ -260,7 +261,7 @@
 
 ; Stage 2: Write $55, read back and verify
     ldx #$00
-    lda #$01
+    lda #$02
     sta stage
 
 @loop55:
@@ -275,7 +276,7 @@
 
 ; Stage 3: Write $AA, read back and verify
     ldx #$00
-    lda #$01
+    lda #$03
     sta stage
 
 @loopAA:
@@ -318,11 +319,99 @@
 .endproc
 
 ;===================================================================
+; Test 3:
+;   Suzy has 48 physical registers. $FC40-$FC6F mirrors
+;   $FC00-$FC2F, with some mirror writes acting as math commands.
+;===================================================================
+.proc Test3
+
+    stz _g_results + 8
+    stz _g_results + 9
+    stz _g_results + 10
+    stz _g_results + 11
+    stz _g_results + 12
+
+; Stage 0: Write each sprite register and read its mirror
+    stz stage
+    ldx #$00
+
+@loop_read_mirror:
+    txa
+    eor #$5A
+    sta expected_value
+    sta $FC00,x
+    lda $FC40,x
+    cmp expected_value
+    bne @fail
+    inx
+    cpx #$30
+    bne @loop_read_mirror
+
+; Stage 1: Write ordinary mirror addresses and read sprite registers.
+; Skip named math ports because writes can clear paired bytes or start
+; multiplication and division.
+    lda #$01
+    sta stage
+    ldx #$00
+
+@loop_write_mirror:
+    cpx #$12
+    bcc @test_write_mirror
+    cpx #$18
+    bcc @next_write_mirror
+    cpx #$20
+    bcc @test_write_mirror
+    cpx #$24
+    bcc @next_write_mirror
+    cpx #$2C
+    bcc @test_write_mirror
+    bra @next_write_mirror
+
+@test_write_mirror:
+    txa
+    eor #$A5
+    sta expected_value
+    sta $FC40,x
+    lda $FC00,x
+    cmp expected_value
+    bne @fail
+
+@next_write_mirror:
+    inx
+    cpx #$30
+    bne @loop_write_mirror
+    bra @reset_regs
+
+@fail:
+    sta _g_results + 12      ; Actual read value
+    lda #$01
+    sta _g_results + 8       ; Failure flag
+    lda stage
+    sta _g_results + 9       ; Phase
+    txa
+    sta _g_results + 10      ; Register offset
+    lda expected_value
+    sta _g_results + 11      ; Expected read value
+
+@reset_regs:
+    ldx #$00
+    lda #$00
+@loop_reset:
+    sta $FC00,x
+    inx
+    cpx #$30
+    bne @loop_reset
+    rts
+
+.endproc
+
+;===================================================================
 ; Main test runner function
 ;===================================================================
 _run_tests:
     sei                 ; Disable interrupts during testing
     jsr Test1
     jsr Test2
+    jsr Test3
     cli                 ; Re-enable interrupts
     rts

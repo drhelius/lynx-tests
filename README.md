@@ -81,6 +81,7 @@ Tests read/write functionality of Mikey and Suzy chip registers.
 
 - **Test 1 – MIKEY COLORS**: Writes multiple bit patterns across every Mikey color-register offset and exercises blue/red byte width, green nibble width, incrementing, and wraparound.
 - **Test 2 – SUZY SPR REGS**: Writes multiple bit patterns across all 48 Suzy sprite registers to verify readback and clearing behavior.
+- **Test 3 – SUZY MIRRORS**: Exercises the `$FC40-$FC6F` aliases of the 48 Suzy sprite registers in both directions while avoiding mirror writes that invoke math commands.
 
 ---
 
