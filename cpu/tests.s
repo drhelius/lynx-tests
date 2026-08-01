@@ -631,8 +631,8 @@ brk_here:
 
 ;===================================================================
 ; Test 7: 65SC02 Subset - RMB/SMB/BBR/BBS
-; Lynx I will fail these test
-; Lynx II uses 65SC02 which has these Rockwell/WDC extensions
+; Lynx I treats these opcodes as NOPs
+; Lynx II implements these Rockwell/WDC extensions
 ; RMB0 = $07, SMB0 = $87, BBR0 = $0F, BBS0 = $8F
 ;===================================================================
 .proc Test7
@@ -641,54 +641,57 @@ brk_here:
     stz _g_results + 14
     stz _g_results + 15
 
+    lda $EA
+    sta test_zp             ; Preserve scratch location
+
     ;-----------------------------------------
     ; Test RMB0 (Reset Memory Bit 0)
     ; Should clear bit 0 of memory location
     ;-----------------------------------------
     lda #$FF
-    sta test_zp             ; All bits set
+    sta $EA                 ; All bits set
 
-    .byte $07               ; RMB0 zp
-    .byte test_zp
+    .byte $07               ; RMB0 $EA on Lynx II, NOP on Lynx I
+    .byte $EA               ; Operand on Lynx II, NOP on Lynx I
 
-    lda test_zp
-    sta _g_results + 12     ; Expected: 0xFE if RMB works, 0xFF if NOP
+    lda $EA
+    sta _g_results + 12     ; Lynx I: 0xFF, Lynx II: 0xFE
 
     ;-----------------------------------------
     ; Test SMB0 (Set Memory Bit 0)
     ; Should set bit 0 of memory location
     ;-----------------------------------------
     lda #$00
-    sta test_zp             ; All bits clear
+    sta $EA                 ; All bits clear
 
-    .byte $87               ; SMB0 zp
-    .byte test_zp
+    .byte $87               ; SMB0 $EA on Lynx II, NOP on Lynx I
+    .byte $EA               ; Operand on Lynx II, NOP on Lynx I
 
-    lda test_zp
-    sta _g_results + 13     ; Expected: 0x01 if SMB works, 0x00 if NOP
+    lda $EA
+    sta _g_results + 13     ; Lynx I: 0x00, Lynx II: 0x01
 
     ;-----------------------------------------
     ; Test BBR0 (Branch on Bit 0 Reset)
     ; If bit 0 is clear, branch; else continue
     ;-----------------------------------------
     lda #$FE                ; Bit 0 is clear
-    sta test_zp
+    sta $EA
 
-    lda #$00
-    sta _g_results + 14     ; Default: not branched
-
-    .byte $0F               ; BBR0 zp, rel
-    .byte test_zp
-    .byte @bbr_taken - (* + 1)  ; Relative offset to @bbr_taken
-
-    ; If we reach here, BBR did NOT branch
     lda #$02
-    sta _g_results + 14     ; 0x02 = BBR did not branch (NOP behavior)
+    sta _g_results + 14     ; Lynx I: not branched
+
+    .byte $0F               ; BBR0 $EA on Lynx II, NOP on Lynx I
+    .byte $EA               ; Operand on Lynx II, NOP on Lynx I
+    .byte @bbr_taken - (* + 1)  ; $18: branch offset or CLC on Lynx I
+
     jmp @test_bbs
+    .repeat 21
+        nop
+    .endrepeat
 
 @bbr_taken:
     lda #$01
-    sta _g_results + 14     ; Expected: 0x01 if BBR works
+    sta _g_results + 14     ; Lynx II: 0x01
 
 @test_bbs:
     ;-----------------------------------------
@@ -696,25 +699,27 @@ brk_here:
     ; If bit 0 is set, branch; else continue
     ;-----------------------------------------
     lda #$01                ; Bit 0 is set
-    sta test_zp
+    sta $EA
 
-    lda #$00
-    sta _g_results + 15     ; Default: not branched
-
-    .byte $8F               ; BBS0 zp, rel
-    .byte test_zp
-    .byte @bbs_taken - (* + 1)  ; Relative offset to @bbs_taken
-
-    ; If we reach here, BBS did NOT branch
     lda #$02
-    sta _g_results + 15     ; 0x02 = BBS did not branch (NOP behavior)
+    sta _g_results + 15     ; Lynx I: not branched
+
+    .byte $8F               ; BBS0 $EA on Lynx II, NOP on Lynx I
+    .byte $EA               ; Operand on Lynx II, NOP on Lynx I
+    .byte @bbs_taken - (* + 1)  ; $18: branch offset or CLC on Lynx I
+
     jmp @done
+    .repeat 21
+        nop
+    .endrepeat
 
 @bbs_taken:
     lda #$01
-    sta _g_results + 15     ; Expected: 0x01 if BBS works
+    sta _g_results + 15     ; Lynx II: 0x01
 
 @done:
+    lda test_zp
+    sta $EA                 ; Restore scratch location
     rts
 .endproc
 
