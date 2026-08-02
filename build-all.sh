@@ -18,6 +18,8 @@ TESTS=(
     "cpu"
     "math"
     "memio"
+    "page-mode"
+    "sdoneack"
     "sprites1"
     "sprites2"
     "sprites3"

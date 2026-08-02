@@ -113,6 +113,24 @@ Tests the effect of MAPCTL page mode (bit 7) on CPU instruction timing.
 
 ---
 
+### sdoneack/
+**Suzy Done Acknowledge and CPU Sleep Tests**
+
+Tests the Mikey/Suzy handshake across sprite completion, CPU sleep, interrupts, and Suzy bus ownership. Each test publishes a two-byte diagnostic pair. The first byte records the tested state transitions; the second is normally the Timer 6 watchdog count, except `IRQ RESLEEP`, where it is the deliberate early-wake IRQ count.
+
+- **Test 1 – ACK BEFORE**: Acknowledges before `SPRGO`, verifies that Suzy becomes busy, then sleeps until completion.
+- **Test 2 – ACK AFTER**: Establishes a pending completion, writes `SPRGO`, acknowledges before `CPUSLEEP`, and verifies normal completion.
+- **Test 3 – REARM ONCE**: Establishes a pending completion, starts another sprite without acknowledging, and verifies that `CPUSLEEP` returns immediately while Suzy remains busy.
+- **Test 4 – REARM STICKY**: Repeats `CPUSLEEP` three times without acknowledging and records one bit per immediate busy return. The wake condition must persist across all three attempts.
+- **Test 5 – ACK VALUE**: Verifies the blocked sleep, writes `$A5` rather than zero to `SDONEACK`, then confirms that the already-started sprite can complete.
+- **Test 6 – IRQ RESLEEP**: Uses Timer 6 to wake the CPU while Suzy is still busy, then sleeps again without `SDONEACK`. An ordinary IRQ must not create a Suzy-done condition.
+- **Test 7 – IRQ PENDING**: Makes a Timer 6 IRQ pending with the CPU interrupt-disable flag set, verifies that `CPUSLEEP` cannot sleep, clears the IRQ, then confirms normal sprite completion.
+- **Test 8 – IDLE SLEEP**: Writes `CPUSLEEP` while Suzy is idle. Mikey's documented broken idle-sleep behavior must return without waiting for the watchdog.
+- **Test 9 – BUS OFF GO**: Writes `SPRGO` while `SUZYBUSEN` is clear, verifies that the sprite engine is busy, then enables Suzy's bus and completes the same operation.
+- **Test 10 – BUS OFF SLEEP**: Starts Suzy, removes its bus permission, and verifies that `CPUSLEEP` cannot remain asleep while Suzy lacks the bus.
+
+---
+
 ### sprites1/
 **Suzy Literal Source and Scaling Timing Tests**
 
