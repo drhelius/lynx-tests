@@ -9,6 +9,11 @@ Hardware tests for the Atari Lynx made by analyzing actual hardware.
 
 <img width="500" src="https://github.com/user-attachments/assets/fe0bf130-8203-4683-a1a1-6675abadccfd" />
 
+## Guides
+
+- [Atari Lynx CPU Page Mode Guide](lynx-page-mode.md) explains the observed instruction-fetch timing rules and how Gearlynx models them.
+- [Lynx Sprite Performance Guide](lynx-sprite-performance.md) covers Suzy's rendering pipeline and practical sprite optimization based on real-hardware measurements.
+
 ## Test Suites
 
 Except for `refresh-rate/`, each suite runs its fixed tests once at startup and displays an abbreviated test name followed by its status. Raw diagnostic bytes are shown below the test list.
