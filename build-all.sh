@@ -28,6 +28,8 @@ TESTS=(
     "timers"
     "uart"
     "uart2"
+    "uart3"
+    "uart4"
 )
 
 # Get the script directory

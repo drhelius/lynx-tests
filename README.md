@@ -260,6 +260,35 @@ Tests UART parity, error handling, and edge cases.
 
 ---
 
+### uart3/
+**ComLynx Loopback Tests**
+
+Tests the echo a Lynx hears of its own transmission. The UART transmit and receive pins share one open-collector wire, so every test here runs on a single console with nothing plugged into the ComLynx port.
+
+- **Test 1 – ECHO LATENCY**: Measures the delay from writing SERDAT on an idle line until RXRDY reports the echoed frame. A frame written to an idle transmitter does not reach the wire at once, so the echo lands about one bit later than the frame length alone would suggest, and still one bit ahead of TXEMPTY.
+- **Test 2 – ECHO GAP**: Measures the spacing between echoes while frames are transmitted back to back, which the shared wire fixes at one frame.
+- **Test 3 – BURST ECHO**: Transmits a back-to-back burst while draining the receiver once per TXRDY. The receiver only holds one byte at this speed, so the final frame lands on top of the one before it while the transmitter is being waited out: the burst comes back one byte short, out of step from that point, and with an overrun.
+- **Test 4 – ECHO ORDER**: Checks that the echo is not reported at TXRDY, which happens a whole frame before the transmission completes.
+- **Test 5 – SLOW READER**: Transmits a burst without ever draining the receiver. Only the newest frame survives, so exactly one byte can be read afterwards and an overrun is reported.
+- **Test 6 – ECHO PARITY**: Exercises the ninth bit through the echo for calculated parity and for the fixed PAREVEN value.
+
+---
+
+### uart4/
+**ComLynx Two Console Tests**
+
+Tests link behavior that a single console cannot show. Both consoles run this ROM and need a ComLynx cable between them. 
+
+- **Test 1 – PEER BURST**: The master sends a back-to-back burst and the slave verifies count, order, and freedom from receive errors.
+- **Test 2 – OWN ECHO**: Both consoles transmit at once and each checks that it still observes its own frames.
+- **Test 3 – COLLISION**: Both consoles drive the wire simultaneously and the link must recover and carry a clean byte afterwards.
+- **Test 4 – HALF DUPLEX**: Checks whether a peer frame can be latched while this console is transmitting.
+- **Test 5 – PARITY LINK**: Confirms parity is evaluated by the receiver by pairing mismatched and matching parity settings.
+
+The last diagnostic byte reports the role this console took: 1 for master, 0 for slave.
+
+---
+
 ## Building
 
 Each test directory contains its own Makefile. To build a specific test:
