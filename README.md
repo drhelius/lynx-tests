@@ -11,7 +11,7 @@ Hardware tests for the Atari Lynx made by analyzing actual hardware.
 
 ## Guides
 
-- [Atari Lynx CPU Page Mode Guide](https://github.com/drhelius/lynx-tests/blob/main/lynx-page-mode.md) explains the observed instruction-fetch timing rules and how Gearlynx models them.
+- [Atari Lynx CPU Page Mode Guide](https://github.com/drhelius/lynx-tests/blob/main/lynx-page-mode.md) explains the observed instruction-fetch timing rules.
 - [Atari Lynx Timer Guide](https://github.com/drhelius/lynx-tests/blob/main/lynx-timers.md) explains Mikey's timer registers, countdown and mode quirks, linking, interrupts, and display/UART roles.
 - [Atari Lynx Video Timing Guide](https://github.com/drhelius/lynx-tests/blob/main/lynx-video-timing.md) explains frame and line timing, VBlank/FPS tuning, PBKUP, display DMA, LCD transfer, and raster effects.
 - [Lynx Sprite Performance Guide](https://github.com/drhelius/lynx-tests/blob/main/lynx-sprite-performance.md) covers Suzy's rendering pipeline and practical sprite optimization based on real-hardware measurements.
