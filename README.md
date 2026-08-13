@@ -233,6 +233,24 @@ Tests the Atari Lynx hardware timers including interrupt generation and linking.
 
 ---
 
+### timers2/
+**Timer Phase and Arbitration Tests**
+
+Tests shared prescaler phase, timer/audio register arbitration, generic Mikey access timing, and linked-clock propagation.
+
+- **Test 1 – T3>T6 ORDER**: Enables Timer 3 before Timer 6 on the shared 4 µs source and verifies that Timer 6 cannot interrupt first.
+- **Test 2 – T6>T3 ORDER**: Reverses the enable order and verifies that Timer 3 cannot interrupt first.
+- **Test 3 – ENABLE PHASE**: Measures the first shared 64 µs edge after enabling Timer 6 at several free-running phases.
+- **Test 4 – COUNT PHASE**: Rewrites Timer 6 CNT while running and verifies that the shared prescaler phase is preserved.
+- **Test 5 – PRESCALER**: Changes Timer 6 from the 32 µs source to the 64 µs source and checks shared-divider sampling.
+- **Test 6 – T4 PHASE**: Uses Timer 3 to measure Timer 4's first edge from the shared 64 µs source.
+- **Test 7 – TIMER READS**: Measures 64 reads from every timer backup register and checks the hardware arbitration envelope.
+- **Test 8 – TIMER WRITES**: Measures 64 writes to every timer backup register and checks per-timer hardware timing.
+- **Test 9 – MIKEY ACCESS**: Compares RAM, interrupt-register, and SERCTL access timing over 64 operations.
+- **Test 10 – LINK CASCADE**: Injects three Timer 3 software clocks and verifies Timer 5 countdown, DONE, and IRQ propagation.
+
+---
+
 ### uart/
 **UART Transmission Timing Tests**
 
